@@ -1,12 +1,19 @@
 package org.clevercastle.helper.login;
 
 import org.clevercastle.helper.login.exception.UserExistException;
+import org.clevercastle.helper.login.repository.UserRepository;
 import org.clevercastle.helper.login.util.HashUtil;
 import org.clevercastle.helper.login.util.TimeUtils;
 
 import java.util.UUID;
 
 public class UserServiceImpl implements UserService {
+    private final UserRepository userRepository;
+
+    public UserServiceImpl(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
     @Override
     public User register(UserRegisterRequest userRegisterRequest) throws CastleException {
         User user = this.get(userRegisterRequest.getLoginIdentifier());
@@ -38,7 +45,7 @@ public class UserServiceImpl implements UserService {
         userLoginItem.setVerificationCodeExpiredAt(null);
         userLoginItem.setCreatedAt(now);
         userLoginItem.setUpdatedAt(now);
-        // TODO: 2025/3/28 save two item
+        this.userRepository.save(user, userLoginItem);
         return user;
     }
 
@@ -48,12 +55,25 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User login(String loginIdentifier, String password) throws CastleException {
-        return null;
+    public UserWithToken login(String loginIdentifier, String password) throws CastleException {
+        User user = get(loginIdentifier);
+        if (user == null || UserState.ACTIVE != user.getUserState()) {
+            throw new CastleException("");
+        }
+        boolean verify = HashUtil.verifyPassword(password, user.getHashedPassword());
+        if (!verify) {
+            throw new CastleException("Incorrect password");
+        }
+        return new UserWithToken(user, null);
     }
 
     @Override
     public User get(String loginIdentifier) throws CastleException {
-        return null;
+        User user = new User();
+        user.setUserState(UserState.ACTIVE);
+        user.setHashedPassword("123456");
+        return user;
     }
+
+
 }
