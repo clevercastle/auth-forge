@@ -1,9 +1,15 @@
 package org.clevercastle.helper.login;
 
-import java.time.OffsetDateTime;
-import java.util.Set;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
+import java.time.OffsetDateTime;
+
+@Entity
+@Table(name = "users")
 public class User {
+    @Id
     private String userId;
     private UserState userState;
     private String hashedPassword;
@@ -16,7 +22,7 @@ public class User {
     private String resetPasswordCode;
     private OffsetDateTime resetPasswordCodeExpiredAt;
 
-    private Set<RefreshToken> refreshTokens;
+//    private Set<RefreshToken> refreshTokens;
 
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;
@@ -77,13 +83,13 @@ public class User {
         this.resetPasswordCodeExpiredAt = resetPasswordCodeExpiredAt;
     }
 
-    public Set<RefreshToken> getRefreshTokens() {
-        return refreshTokens;
-    }
-
-    public void setRefreshTokens(Set<RefreshToken> refreshTokens) {
-        this.refreshTokens = refreshTokens;
-    }
+//    public Set<RefreshToken> getRefreshTokens() {
+//        return refreshTokens;
+//    }
+//
+//    public void setRefreshTokens(Set<RefreshToken> refreshTokens) {
+//        this.refreshTokens = refreshTokens;
+//    }
 
     public OffsetDateTime getCreatedAt() {
         return createdAt;

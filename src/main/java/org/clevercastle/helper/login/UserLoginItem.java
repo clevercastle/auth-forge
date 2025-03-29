@@ -1,5 +1,9 @@
 package org.clevercastle.helper.login;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
 import java.time.OffsetDateTime;
 
 /**
@@ -10,9 +14,12 @@ import java.time.OffsetDateTime;
  *
  *  when the user register, it should automatically create a login item & create the corresponding user
  */
+@Entity
+@Table(name = "user_login_item")
 public class UserLoginItem {
-    private String userId;
+    @Id
     private String loginIdentifier;
+    private String userId;
 
     // used for login item verification (loginType == raw)
     private String verificationCode;

@@ -69,10 +69,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User get(String loginIdentifier) throws CastleException {
-        User user = new User();
-        user.setUserState(UserState.ACTIVE);
-        user.setHashedPassword("123456");
-        return user;
+        return userRepository.get(loginIdentifier);
     }
 
 
