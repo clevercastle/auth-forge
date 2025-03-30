@@ -1,5 +1,6 @@
 package org.clevercastle.helper.login.repository.rdsjpa;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.clevercastle.helper.login.User;
 import org.clevercastle.helper.login.UserLoginItem;
 import org.clevercastle.helper.login.repository.UserRepository;
@@ -30,10 +31,10 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public User get(String loginIdentifier) {
+    public Pair<User, UserLoginItem> get(String loginIdentifier) {
         UserLoginItem userLoginItem = userLoginItemRepository.getByLoginIdentifier(loginIdentifier);
         if (userLoginItem != null) {
-            return userModelRepository.getByUserId(userLoginItem.getUserId());
+            return Pair.of(userModelRepository.getByUserId(userLoginItem.getUserId()), userLoginItem);
         }
         return null;
     }

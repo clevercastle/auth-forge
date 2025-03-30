@@ -6,7 +6,6 @@ public class TokenHolder {
     private String accessToken;
     private String idToken;
     private String refreshToken;
-    // access / id
     private String tokenType;
     private long expiresIn;
     private String scope;

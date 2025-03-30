@@ -20,6 +20,7 @@ public class UserLoginItem {
     @Id
     private String loginIdentifier;
     private String userId;
+    private String userSub;
 
     // used for login item verification (loginType == raw)
     private String verificationCode;
@@ -34,6 +35,14 @@ public class UserLoginItem {
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public String getUserSub() {
+        return userSub;
+    }
+
+    public void setUserSub(String userSub) {
+        this.userSub = userSub;
     }
 
     public String getLoginIdentifier() {
