@@ -97,10 +97,10 @@ class CryptoUtilTest {
     @Test
     void testDerJoseConversionWithDifferentSizes() throws Exception {
         // Test with P-256 (32 bytes)
-//        testDerJoseConversionForKeySize(keyPair256, 32);
+        testDerJoseConversionForKeySize(keyPair256, 32);
 
         // Test with P-384 (48 bytes)
-//        testDerJoseConversionForKeySize(keyPair384, 48);
+        testDerJoseConversionForKeySize(keyPair384, 48);
 
         // Test with P-521 (66 bytes)
         testDerJoseConversionForKeySize(keyPair521, 66);

@@ -1,32 +1,30 @@
 package org.clevercastle.helper.login.token.jwt;
 
+import com.auth0.jwt.algorithms.Algorithm;
 import org.apache.commons.lang3.StringUtils;
 import org.clevercastle.helper.login.CastleException;
 import org.clevercastle.helper.login.TokenHolder;
 import org.clevercastle.helper.login.User;
 import org.clevercastle.helper.login.UserLoginItem;
 import org.clevercastle.helper.login.token.TokenService;
-import org.clevercastle.helper.login.util.CryptoUtil;
 import org.clevercastle.helper.login.util.JsonUtil;
 import org.clevercastle.helper.login.util.TimeUtils;
 
 import java.nio.charset.StandardCharsets;
-import java.security.PrivateKey;
 import java.time.OffsetDateTime;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
 public class JwtTokenService implements TokenService {
-    public static final String DEFAULT_SIGN_ALGORITHM = "ES256";
     private static final Base64.Encoder base64UrlEncoder = Base64.getUrlEncoder().withoutPadding();
 
-    private final PrivateKey privateKey;
     private final String keyId;
+    private final Algorithm algorithm;
 
-    public JwtTokenService(PrivateKey privateKey, String keyId) {
-        this.privateKey = privateKey;
+    public JwtTokenService(Algorithm algorithm, String keyId) {
         this.keyId = keyId;
+        this.algorithm = algorithm;
     }
 
     @Override
@@ -45,7 +43,7 @@ public class JwtTokenService implements TokenService {
 
     public String generateOneToken(User user, UserLoginItem item, long iat, long exp) throws CastleException {
         Map<String, Object> headerMap = new HashMap<>();
-        headerMap.put("alg", DEFAULT_SIGN_ALGORITHM);
+        headerMap.put("alg", algorithm.getName());
         headerMap.put("kid", keyId);
 
         Map<String, Object> payloadMap = new HashMap<>();
@@ -58,13 +56,11 @@ public class JwtTokenService implements TokenService {
         String headerJson = JsonUtil.toJson(headerMap);
         String payloadJson = JsonUtil.toJson(payloadMap);
 
-        String headerEncoded = base64UrlEncoder.encodeToString(headerJson.getBytes(StandardCharsets.UTF_8));
-        String payloadEncoded = base64UrlEncoder.encodeToString(payloadJson.getBytes(StandardCharsets.UTF_8));
-        String signingInput = headerEncoded + "." + payloadEncoded;
 
-        byte[] signature = CryptoUtil.sign(signingInput, privateKey, "SHA256withECDSA");
-        byte[] joseSignature = CryptoUtil.derToJose(signature, 32);
-        String signatureEncoded = base64UrlEncoder.encodeToString(joseSignature);
-        return signingInput + "." + signatureEncoded;
+        String header = base64UrlEncoder.encodeToString(headerJson.getBytes(StandardCharsets.UTF_8));
+        String payload = base64UrlEncoder.encodeToString(payloadJson.getBytes(StandardCharsets.UTF_8));
+        byte[] signatureBytes = this.algorithm.sign(header.getBytes(StandardCharsets.UTF_8), payload.getBytes(StandardCharsets.UTF_8));
+        String signature = base64UrlEncoder.encodeToString(signatureBytes);
+        return String.format("%s.%s.%s", header, payload, signature);
     }
 }

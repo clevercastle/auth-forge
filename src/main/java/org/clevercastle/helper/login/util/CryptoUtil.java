@@ -59,6 +59,13 @@ public class CryptoUtil {
         if (derSignature[0] != 0x30) {
             throw new IllegalArgumentException("Invalid DER signature");
         }
+
+        // Get the total length of the sequence
+        int totalLength = derSignature[1] & 0xFF;
+        if (totalLength + 2 != derSignature.length) {
+            throw new IllegalArgumentException("Invalid DER signature length");
+        }
+
         int offset = 2;  // Skip the SEQUENCE tag and length field
 
         // Parse the r value
@@ -78,20 +85,34 @@ public class CryptoUtil {
         byte[] s = new byte[sLength];
         System.arraycopy(derSignature, offset + 2, s, 0, sLength);
 
-        // Pad r and s to the fixed output length
-        byte[] rPadded = new byte[outputLength];
-        byte[] sPadded = new byte[outputLength];
-        int rCopyLength = Math.min(r.length, outputLength);
-        System.arraycopy(r, Math.max(0, r.length - outputLength), rPadded, outputLength - rCopyLength, rCopyLength);
-        int sCopyLength = Math.min(s.length, outputLength);
-        System.arraycopy(s, Math.max(0, s.length - outputLength), sPadded, outputLength - sCopyLength, sCopyLength);
+        // Remove leading zeros from r and s while ensuring at least one byte remains
+        r = trimLeadingZeros(r);
+        s = trimLeadingZeros(s);
 
-        // Concatenate r and s to produce the final signature in JOSE format (r||s)
+        // Create the JOSE signature with proper padding
         byte[] joseSignature = new byte[outputLength * 2];
-        System.arraycopy(rPadded, 0, joseSignature, 0, outputLength);
-        System.arraycopy(sPadded, 0, joseSignature, outputLength, outputLength);
+
+        // Copy r and s into the JOSE signature with proper padding
+        int rOffset = outputLength - r.length;
+        int sOffset = outputLength + (outputLength - s.length);
+        if (rOffset < 0 || sOffset < outputLength) {
+            throw new IllegalArgumentException("Invalid signature value: too large for output length");
+        }
+
+        System.arraycopy(r, 0, joseSignature, rOffset, r.length);
+        System.arraycopy(s, 0, joseSignature, sOffset, s.length);
 
         return joseSignature;
+    }
+
+    private static byte[] trimLeadingZeros(byte[] input) {
+        int offset = 0;
+        while (offset < input.length - 1 && input[offset] == 0) {
+            offset++;
+        }
+        byte[] result = new byte[input.length - offset];
+        System.arraycopy(input, offset, result, 0, result.length);
+        return result;
     }
 
     /**
@@ -135,20 +156,6 @@ public class CryptoUtil {
         baos.write(sDer.length);  // length of s
         baos.write(sDer);         // s value
         return baos.toByteArray();
-    }
-
-    /**
-     * Trims leading zero bytes from the given array (leaving at least one byte).
-     *
-     * @param bytes The byte array to trim.
-     * @return A new byte array without unnecessary leading zeros.
-     */
-    private static byte[] trimLeadingZeros(byte[] bytes) {
-        int i = 0;
-        while (i < bytes.length - 1 && bytes[i] == 0) {
-            i++;
-        }
-        return Arrays.copyOfRange(bytes, i, bytes.length);
     }
 
     /**
