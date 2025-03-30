@@ -11,6 +11,8 @@ import org.clevercastle.helper.login.token.TokenService;
 import org.clevercastle.helper.login.token.jwt.JwtTokenService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
@@ -57,5 +59,16 @@ public class Beans {
     @Bean
     public UserService userService(UserRepository userRepository, TokenService tokenService) {
         return new UserServiceImpl(userRepository, tokenService);
+    }
+
+
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**").allowedOrigins("*");
+            }
+        };
     }
 }
