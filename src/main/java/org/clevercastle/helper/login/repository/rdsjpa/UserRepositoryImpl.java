@@ -36,6 +36,6 @@ public class UserRepositoryImpl implements UserRepository {
         if (userLoginItem != null) {
             return Pair.of(userModelRepository.getByUserId(userLoginItem.getUserId()), userLoginItem);
         }
-        return null;
+        return Pair.of(null, null);
     }
 }

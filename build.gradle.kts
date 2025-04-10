@@ -18,6 +18,8 @@ dependencies {
     implementation("jakarta.persistence:jakarta.persistence-api:3.2.0")
     implementation("com.auth0:java-jwt:4.5.0")
 
+    implementation("com.nimbusds:oauth2-oidc-sdk:11.23.1")
+
     implementation("org.apache.commons:commons-lang3:3.17.0")
     implementation("org.slf4j:slf4j-api:2.0.17")
 
