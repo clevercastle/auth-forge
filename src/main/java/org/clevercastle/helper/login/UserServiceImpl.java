@@ -1,6 +1,5 @@
 package org.clevercastle.helper.login;
 
-import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.oauth2.sdk.AuthorizationCode;
 import com.nimbusds.oauth2.sdk.AuthorizationCodeGrant;
 import com.nimbusds.oauth2.sdk.AuthorizationGrant;
@@ -18,6 +17,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.clevercastle.helper.login.exception.UserExistException;
 import org.clevercastle.helper.login.exception.UserNotFoundException;
 import org.clevercastle.helper.login.oauth2.Oauth2ClientConfig;
+import org.clevercastle.helper.login.oauth2.Oauth2User;
 import org.clevercastle.helper.login.repository.UserRepository;
 import org.clevercastle.helper.login.token.TokenService;
 import org.clevercastle.helper.login.util.HashUtil;
@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.text.ParseException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -39,7 +38,8 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final TokenService tokenService;
 
-    public UserServiceImpl(UserRepository userRepository, TokenService tokenService) {
+    public UserServiceImpl(UserRepository userRepository,
+                           TokenService tokenService) {
         this.userRepository = userRepository;
         this.tokenService = tokenService;
     }
@@ -101,16 +101,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserWithToken exchange(Oauth2ClientConfig clientConfig, String authorizationCode, String state, String redirectUrl) throws CastleException {
-        OIDCTokenResponse oidcTokenResponse = oauth2Exchange(clientConfig, authorizationCode, state, redirectUrl);
-        JWTClaimsSet jwtClaimsSet = null;
-        try {
-            jwtClaimsSet = oidcTokenResponse.getOIDCTokens().getIDToken().getJWTClaimsSet();
-        } catch (ParseException e) {
+        Oauth2User oauth2User = clientConfig.getOauth2ExchangeService().exchange(clientConfig, authorizationCode, state, redirectUrl);
+        if (StringUtils.isBlank(oauth2User.getLoginIdentifier())) {
             throw new CastleException();
         }
-        String sub = jwtClaimsSet.getSubject();
-        String loginIdentifier = clientConfig.getUniqueId() + "#" + sub;
-        Pair<User, UserLoginItem> pair = get(loginIdentifier);
+        Pair<User, UserLoginItem> pair = get(oauth2User.getLoginIdentifier());
         var user = pair.getLeft();
         var userLoginItem = pair.getRight();
         if (userLoginItem == null) {
@@ -126,8 +121,8 @@ public class UserServiceImpl implements UserService {
 
             userLoginItem = new UserLoginItem();
             userLoginItem.setUserId(userId);
-            userLoginItem.setLoginIdentifier(loginIdentifier);
-            userLoginItem.setUserSub(sub);
+            userLoginItem.setLoginIdentifier(oauth2User.getLoginIdentifier());
+            userLoginItem.setUserSub(oauth2User.getUserSub());
             userLoginItem.setCreatedAt(now);
             userLoginItem.setUpdatedAt(now);
             this.userRepository.save(user, userLoginItem);
@@ -187,7 +182,9 @@ public class UserServiceImpl implements UserService {
             }
             URI tokenEndpoint = new URI(clientConfig.getOauth2TokenUrl());
             TokenRequest request = new TokenRequest(tokenEndpoint, clientAuth, codeGrant, null);
-            HTTPResponse httpResponse = request.toHTTPRequest().send();
+            var httpRequest = request.toHTTPRequest();
+            httpRequest.setHeader("Accept", "application/json");
+            HTTPResponse httpResponse = httpRequest.send();
             if (httpResponse.getStatusCode() != HTTPResponse.SC_OK) {
                 logger.warn("Token exchange error {}", httpResponse.getBody());
                 throw new CastleException();

@@ -1,5 +1,6 @@
 package org.clevercastle.helper.login.oauth2;
 
+import java.net.http.HttpClient;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -12,9 +13,11 @@ public class Oauth2ClientConfig {
     private String oauth2TokenUrl;
     private List<String> scopes;
     private Map<String, String> mandatoryQueryParams;
-    private Function<Map<String, Object>, Boolean> emailVerifiedFunction;
+    private HttpClient httpClient;
+    private Function<Map<String, Object>, String> emailFunction;
     private Function<Map<String, Object>, String> nameFunction;
-    private Function<Map<String, Object>, Avatar> avatarFunction;
+
+    private Oauth2ExchangeService oauth2ExchangeService;
 
     public String getUniqueId() {
         return uniqueId;
@@ -40,20 +43,24 @@ public class Oauth2ClientConfig {
         return scopes;
     }
 
-    public Function<Map<String, Object>, Boolean> getEmailVerifiedFunction() {
-        return emailVerifiedFunction;
+    public Map<String, String> getMandatoryQueryParams() {
+        return mandatoryQueryParams;
+    }
+
+    public HttpClient getHttpClient() {
+        return httpClient;
+    }
+
+    public Function<Map<String, Object>, String> getEmailFunction() {
+        return emailFunction;
     }
 
     public Function<Map<String, Object>, String> getNameFunction() {
         return nameFunction;
     }
 
-    public Function<Map<String, Object>, Avatar> getAvatarFunction() {
-        return avatarFunction;
-    }
-
-    public Map<String, String> getMandatoryQueryParams() {
-        return mandatoryQueryParams;
+    public Oauth2ExchangeService getOauth2ExchangeService() {
+        return oauth2ExchangeService;
     }
 
     public static Builder builder() {
@@ -68,9 +75,10 @@ public class Oauth2ClientConfig {
         private String oauth2TokenUrl;
         private List<String> scopes;
         private Map<String, String> mandatoryQueryParams;
-        private Function<Map<String, Object>, Boolean> emailVerifiedFunction;
+        private HttpClient httpClient;
+        private Function<Map<String, Object>, String> emailFunction;
         private Function<Map<String, Object>, String> nameFunction;
-        private Function<Map<String, Object>, Avatar> avatarFunction;
+        private Oauth2ExchangeService oauth2ExchangeService;
 
         private Builder() {
         }
@@ -114,8 +122,13 @@ public class Oauth2ClientConfig {
             return this;
         }
 
-        public Builder emailVerifiedFunction(Function<Map<String, Object>, Boolean> emailVerifiedFunction) {
-            this.emailVerifiedFunction = emailVerifiedFunction;
+        public Builder httpClient(HttpClient httpClient) {
+            this.httpClient = httpClient;
+            return this;
+        }
+
+        public Builder emailFunction(Function<Map<String, Object>, String> emailFunction) {
+            this.emailFunction = emailFunction;
             return this;
         }
 
@@ -124,23 +137,24 @@ public class Oauth2ClientConfig {
             return this;
         }
 
-        public Builder avatarFunction(Function<Map<String, Object>, Avatar> avatarFunction) {
-            this.avatarFunction = avatarFunction;
+        public Builder oauth2ExchangeService(Oauth2ExchangeService oauth2ExchangeService) {
+            this.oauth2ExchangeService = oauth2ExchangeService;
             return this;
         }
 
         public Oauth2ClientConfig build() {
             Oauth2ClientConfig oauth2ClientConfig = new Oauth2ClientConfig();
-            oauth2ClientConfig.nameFunction = this.nameFunction;
-            oauth2ClientConfig.oauth2LoginUrl = this.oauth2LoginUrl;
-            oauth2ClientConfig.clientSecret = this.clientSecret;
-            oauth2ClientConfig.scopes = this.scopes;
-            oauth2ClientConfig.uniqueId = this.uniqueId;
-            oauth2ClientConfig.oauth2TokenUrl = this.oauth2TokenUrl;
-            oauth2ClientConfig.emailVerifiedFunction = this.emailVerifiedFunction;
-            oauth2ClientConfig.clientId = this.clientId;
             oauth2ClientConfig.mandatoryQueryParams = this.mandatoryQueryParams;
-            oauth2ClientConfig.avatarFunction = this.avatarFunction;
+            oauth2ClientConfig.oauth2ExchangeService = this.oauth2ExchangeService;
+            oauth2ClientConfig.oauth2TokenUrl = this.oauth2TokenUrl;
+            oauth2ClientConfig.uniqueId = this.uniqueId;
+            oauth2ClientConfig.nameFunction = this.nameFunction;
+            oauth2ClientConfig.scopes = this.scopes;
+            oauth2ClientConfig.httpClient = this.httpClient;
+            oauth2ClientConfig.clientId = this.clientId;
+            oauth2ClientConfig.oauth2LoginUrl = this.oauth2LoginUrl;
+            oauth2ClientConfig.emailFunction = this.emailFunction;
+            oauth2ClientConfig.clientSecret = this.clientSecret;
             return oauth2ClientConfig;
         }
     }
