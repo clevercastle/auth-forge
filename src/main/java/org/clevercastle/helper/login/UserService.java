@@ -11,6 +11,8 @@ public interface UserService {
 
     Pair<User, UserLoginItem> get(String loginIdentifier) throws CastleException;
 
+    String generate(Oauth2ClientConfig oauth2Client, String redirectUri);
+
     // used for sso login
-    User exchange(Oauth2ClientConfig clientConfig, String authorizationCode, String state, String redirectUrl) throws CastleException;
+    UserWithToken exchange(Oauth2ClientConfig clientConfig, String authorizationCode, String state, String redirectUrl) throws CastleException;
 }

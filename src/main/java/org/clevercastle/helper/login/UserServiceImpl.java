@@ -1,5 +1,6 @@
 package org.clevercastle.helper.login;
 
+import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.oauth2.sdk.AuthorizationCode;
 import com.nimbusds.oauth2.sdk.AuthorizationCodeGrant;
 import com.nimbusds.oauth2.sdk.AuthorizationGrant;
@@ -11,6 +12,7 @@ import com.nimbusds.oauth2.sdk.auth.Secret;
 import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.openid.connect.sdk.OIDCTokenResponse;
+import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.clevercastle.helper.login.exception.UserExistException;
@@ -19,6 +21,7 @@ import org.clevercastle.helper.login.oauth2.Oauth2ClientConfig;
 import org.clevercastle.helper.login.repository.UserRepository;
 import org.clevercastle.helper.login.token.TokenService;
 import org.clevercastle.helper.login.util.HashUtil;
+import org.clevercastle.helper.login.util.IdUtil;
 import org.clevercastle.helper.login.util.TimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +29,9 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.text.ParseException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.UUID;
 
 public class UserServiceImpl implements UserService {
@@ -48,7 +54,7 @@ public class UserServiceImpl implements UserService {
             }
             // if the user is deleted, just re-create it
         }
-        String userId = UUID.randomUUID().toString();
+        String userId = IdUtil.genUserId();
         var now = TimeUtils.now();
         user = new User();
         user.setUserId(userId);
@@ -64,6 +70,7 @@ public class UserServiceImpl implements UserService {
 
         UserLoginItem userLoginItem = new UserLoginItem();
         userLoginItem.setUserId(userId);
+        userLoginItem.setUserSub(UUID.randomUUID().toString());
         userLoginItem.setLoginIdentifier(userRegisterRequest.getLoginIdentifier());
         // TODO: 2025/3/28 verification code
         userLoginItem.setVerificationCode(null);
@@ -75,21 +82,105 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User exchange(Oauth2ClientConfig clientConfig, String authorizationCode, String state, String redirecturl) throws CastleException {
-        AuthorizationCode code = new AuthorizationCode(authorizationCode);
+    public String generate(Oauth2ClientConfig oauth2Client, String redirectUrl) {
+        Map<String, String> map = new LinkedHashMap<>();
+        if (oauth2Client.getMandatoryQueryParams() != null) {
+            map.putAll(oauth2Client.getMandatoryQueryParams());
+        }
+        map.put("client_id", oauth2Client.getClientId());
+        map.put("redirect_uri", redirectUrl);
+        map.put("response_type", "code");
+        map.put("scope", StringUtils.join(oauth2Client.getScopes(), "%20"));
+        map.put("state", UUID.randomUUID().toString());
+        String queryString = map.entrySet().stream()
+                .map(it -> String.format("%s=%s", it.getKey(), it.getValue()))
+                .collect(java.util.stream.Collectors.joining("&"));
+        // TODO: 2025/4/10 cache the state
+        return oauth2Client.getOauth2LoginUrl() + "?" + queryString;
+    }
 
+    @Override
+    public UserWithToken exchange(Oauth2ClientConfig clientConfig, String authorizationCode, String state, String redirectUrl) throws CastleException {
+        OIDCTokenResponse oidcTokenResponse = oauth2Exchange(clientConfig, authorizationCode, state, redirectUrl);
+        JWTClaimsSet jwtClaimsSet = null;
+        try {
+            jwtClaimsSet = oidcTokenResponse.getOIDCTokens().getIDToken().getJWTClaimsSet();
+        } catch (ParseException e) {
+            throw new CastleException();
+        }
+        String sub = jwtClaimsSet.getSubject();
+        String loginIdentifier = clientConfig.getUniqueId() + "#" + sub;
+        Pair<User, UserLoginItem> pair = get(loginIdentifier);
+        var user = pair.getLeft();
+        var userLoginItem = pair.getRight();
+        if (userLoginItem == null) {
+            // register process
+            String userId = IdUtil.genUserId();
+            var now = TimeUtils.now();
+            user = new User();
+            user.setUserId(userId);
+            user.setUserState(UserState.ACTIVE);
+
+            user.setCreatedAt(now);
+            user.setUpdatedAt(now);
+
+            userLoginItem = new UserLoginItem();
+            userLoginItem.setUserId(userId);
+            userLoginItem.setLoginIdentifier(loginIdentifier);
+            userLoginItem.setUserSub(sub);
+            userLoginItem.setCreatedAt(now);
+            userLoginItem.setUpdatedAt(now);
+            this.userRepository.save(user, userLoginItem);
+            TokenHolder tokenHolder = tokenService.generateToken(user, userLoginItem);
+            return new UserWithToken(user, tokenHolder);
+        } else {
+            // login process
+            if (user == null || UserState.ACTIVE != user.getUserState()) {
+                throw new CastleException("");
+            }
+            TokenHolder tokenHolder = tokenService.generateToken(user, userLoginItem);
+            return new UserWithToken(user, tokenHolder);
+        }
+    }
+
+    @Override
+    public UserWithToken login(String loginIdentifier, String password) throws CastleException {
+        Pair<User, UserLoginItem> pair = get(loginIdentifier);
+        var user = pair.getLeft();
+        var userLoginItem = pair.getRight();
+        if (user == null) {
+            throw new UserNotFoundException();
+        }
+        if (UserState.ACTIVE != user.getUserState()) {
+            throw new CastleException("");
+        }
+        boolean verify = HashUtil.verifyPassword(password, user.getHashedPassword());
+        if (!verify) {
+            throw new CastleException("Incorrect password");
+        }
+        TokenHolder tokenHolder = tokenService.generateToken(user, userLoginItem);
+        return new UserWithToken(user, tokenHolder);
+    }
+
+    /**
+     * get id token from oauth2 provider
+     * @param clientConfig
+     * @param authorizationCode
+     * @param state
+     * @param redirectUrl
+     * @return
+     * @throws CastleException
+     */
+    private OIDCTokenResponse oauth2Exchange(Oauth2ClientConfig clientConfig, String authorizationCode, String state, String redirectUrl) throws CastleException {
+        AuthorizationCode code = new AuthorizationCode(authorizationCode);
         ClientID clientID = new ClientID(clientConfig.getClientId());
         Secret clientSecret = new Secret(clientConfig.getClientSecret());
         ClientAuthentication clientAuth = new ClientSecretBasic(clientID, clientSecret);
-
         try {
             AuthorizationGrant codeGrant;
-            if (StringUtils.isNotBlank(redirecturl)) {
+            if (StringUtils.isNotBlank(redirectUrl)) {
                 codeGrant =
-                        new AuthorizationCodeGrant(code, new URI(redirecturl));
-            } else if (StringUtils.isNotBlank(clientConfig.getRedirectUrl())) {
-                codeGrant =
-                        new AuthorizationCodeGrant(code, new URI(clientConfig.getRedirectUrl()));
+                        new AuthorizationCodeGrant(code, new URI(redirectUrl));
             } else {
                 codeGrant =
                         new AuthorizationCodeGrant(code, null);
@@ -98,7 +189,7 @@ public class UserServiceImpl implements UserService {
             TokenRequest request = new TokenRequest(tokenEndpoint, clientAuth, codeGrant, null);
             HTTPResponse httpResponse = request.toHTTPRequest().send();
             if (httpResponse.getStatusCode() != HTTPResponse.SC_OK) {
-                logger.warn("Token exchange error {}", httpResponse);
+                logger.warn("Token exchange error {}", httpResponse.getBody());
                 throw new CastleException();
             }
             OIDCTokenResponse response = null;
@@ -114,8 +205,7 @@ public class UserServiceImpl implements UserService {
                 logger.error("OIDC token exchange error {}", response.toErrorResponse());
                 throw new CastleException();
             }
-            OIDCTokenResponse successResponse = response.toSuccessResponse();
-            return null;
+            return response.toSuccessResponse();
         } catch (URISyntaxException e) {
             logger.error("Token exchange URI error.", e);
             throw new CastleException(e);
@@ -124,25 +214,7 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    @Override
-    public UserWithToken login(String loginIdentifier, String password) throws CastleException {
-        Pair<User, UserLoginItem> pair = get(loginIdentifier);
-        if (pair == null) {
-            throw new UserNotFoundException();
-        }
-        var user = pair.getLeft();
-        var userLoginItem = pair.getRight();
-        if (user == null || UserState.ACTIVE != user.getUserState()) {
-            throw new CastleException("");
-        }
-        boolean verify = HashUtil.verifyPassword(password, user.getHashedPassword());
-        if (!verify) {
-            throw new CastleException("Incorrect password");
-        }
-        TokenHolder tokenHolder = tokenService.generateToken(user, userLoginItem);
-        return new UserWithToken(user, tokenHolder);
-    }
-
+    @Nonnull
     @Override
     public Pair<User, UserLoginItem> get(String loginIdentifier) throws CastleException {
         return userRepository.get(loginIdentifier);
