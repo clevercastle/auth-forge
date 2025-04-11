@@ -3,8 +3,8 @@ plugins {
     id("jacoco")
 }
 
-group = "simcloud"
-version = "1.0-SNAPSHOT"
+group = "org.clevercastle"
+version = "0.1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -16,6 +16,7 @@ dependencies {
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.3")
 
     implementation("jakarta.annotation:jakarta.annotation-api:3.0.0")
+    implementation("javax.persistence:javax.persistence-api:2.2")
     implementation("jakarta.persistence:jakarta.persistence-api:3.2.0")
     implementation("com.auth0:java-jwt:4.5.0")
 
@@ -40,4 +41,14 @@ tasks.jacocoTestReport {
 tasks.test {
     useJUnitPlatform()
     finalizedBy(tasks.jacocoTestReport)
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    options.release.set(11)
 }

@@ -1,6 +1,7 @@
 package org.clevercastle.helper.login.oauth2;
 
-import java.net.http.HttpClient;
+import org.clevercastle.helper.login.http.IHttpClient;
+
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -13,7 +14,7 @@ public class Oauth2ClientConfig {
     private String oauth2TokenUrl;
     private List<String> scopes;
     private Map<String, String> mandatoryQueryParams;
-    private HttpClient httpClient;
+    private IHttpClient httpClient;
     private Function<Map<String, Object>, String> emailFunction;
     private Function<Map<String, Object>, String> nameFunction;
 
@@ -47,7 +48,7 @@ public class Oauth2ClientConfig {
         return mandatoryQueryParams;
     }
 
-    public HttpClient getHttpClient() {
+    public IHttpClient getHttpClient() {
         return httpClient;
     }
 
@@ -75,7 +76,7 @@ public class Oauth2ClientConfig {
         private String oauth2TokenUrl;
         private List<String> scopes;
         private Map<String, String> mandatoryQueryParams;
-        private HttpClient httpClient;
+        private IHttpClient httpClient;
         private Function<Map<String, Object>, String> emailFunction;
         private Function<Map<String, Object>, String> nameFunction;
         private Oauth2ExchangeService oauth2ExchangeService;
@@ -122,7 +123,7 @@ public class Oauth2ClientConfig {
             return this;
         }
 
-        public Builder httpClient(HttpClient httpClient) {
+        public Builder httpClient(IHttpClient httpClient) {
             this.httpClient = httpClient;
             return this;
         }

@@ -6,6 +6,9 @@ import com.nimbusds.oauth2.sdk.http.HTTPRequest;
 import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.token.AccessTokenType;
 import org.clevercastle.helper.login.CastleException;
+import org.clevercastle.helper.login.http.HttpRequest;
+import org.clevercastle.helper.login.http.HttpResponse;
+import org.clevercastle.helper.login.http.IHttpClient;
 import org.clevercastle.helper.login.oauth2.Oauth2ClientConfig;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -26,7 +29,12 @@ public class GithubOauth2ExchangeServiceTest {
                 .oauth2LoginUrl("https://github.com/login/oauth/authorize")
                 .oauth2TokenUrl("https://github.com/login/oauth/access_token")
                 .scopes(List.of("user:email"))
-                .httpClient(HttpClient.newBuilder().build())
+                .httpClient(new IHttpClient() {
+                    @Override
+                    public HttpResponse execute(HttpRequest request) throws CastleException {
+                        return null;
+                    }
+                })
                 .build();
         HTTPRequest httpRequest = githubOauth2ExchangeService.genHttpRequest(githubClientConfig, "code", "http://localhost:3000/auth/exchange");
         Assertions.assertTrue(httpRequest.getHeaderMap().get("Accept").contains("application/json"));

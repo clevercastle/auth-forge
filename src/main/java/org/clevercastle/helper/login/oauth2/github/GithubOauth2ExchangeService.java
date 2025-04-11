@@ -7,6 +7,7 @@ import com.nimbusds.oauth2.sdk.http.HTTPRequest;
 import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.openid.connect.sdk.OIDCTokenResponse;
 import org.clevercastle.helper.login.CastleException;
+import org.clevercastle.helper.login.http.HttpResponse;
 import org.clevercastle.helper.login.oauth2.AbstractOauth2ExchangeService;
 import org.clevercastle.helper.login.oauth2.Oauth2ClientConfig;
 import org.clevercastle.helper.login.oauth2.Oauth2User;
@@ -14,11 +15,8 @@ import org.clevercastle.helper.login.util.JsonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 
 public class GithubOauth2ExchangeService extends AbstractOauth2ExchangeService {
     private static final Logger logger = LoggerFactory.getLogger(GithubOauth2ExchangeService.class);
@@ -40,26 +38,27 @@ public class GithubOauth2ExchangeService extends AbstractOauth2ExchangeService {
         if (tokenResponse instanceof AccessTokenResponse) {
             Oauth2User oauth2User = new Oauth2User();
             // https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28
-            URI uri = URI.create(USER_INFO_API);
-            HttpRequest.Builder httpRequest = HttpRequest.newBuilder()
-                    .uri(uri)
-                    .method("GET", HttpRequest.BodyPublishers.noBody())
-                    .header("Authorization", "Bearer %s".formatted(((AccessTokenResponse) tokenResponse).getTokens().getAccessToken()))
-                    .timeout(Duration.ofSeconds(15));
+            org.clevercastle.helper.login.http.HttpRequest httpRequest = new org.clevercastle.helper.login.http.HttpRequest();
+            httpRequest.setUrl(USER_INFO_API);
+            httpRequest.setMethod("GET");
+            httpRequest.setBody(null);
+            Map<String, String> headers = new HashMap<>();
+            headers.put("Authorization", String.format("Bearer %s", ((AccessTokenResponse) tokenResponse).getTokens().getAccessToken()));
+            httpRequest.setHeaders(headers);
             try {
-                var response = clientConfig.getHttpClient().send(httpRequest.build(), HttpResponse.BodyHandlers.ofString());
+                HttpResponse response = clientConfig.getHttpClient().execute(httpRequest);
                 if (response == null) {
                     throw new CastleException();
                 }
-                if (response.statusCode() >= 400) {
+                if (response.getStatusCode() >= 400) {
                     throw new CastleException();
                 }
-                GithubUser githubUser = JsonUtil.fromJson(response.body(), GithubUser.class);
+                GithubUser githubUser = JsonUtil.fromJson(response.getBody(), GithubUser.class);
                 oauth2User.setLoginIdentifier(clientConfig.getUniqueId() + "#" + githubUser.getId());
                 oauth2User.setUserSub(githubUser.getId());
                 oauth2User.setName(githubUser.getName());
                 return oauth2User;
-            } catch (IOException | InterruptedException e) {
+            } catch (CastleException e) {
                 throw new CastleException(e);
             }
         }

@@ -14,9 +14,12 @@ import java.time.OffsetDateTime;
  *
  *  when the user register, it should automatically create a login item & create the corresponding user
  */
+@javax.persistence.Entity
+@javax.persistence.Table(name = "user_login_item")
 @Entity
 @Table(name = "user_login_item")
 public class UserLoginItem {
+    @javax.persistence.Id
     @Id
     private String loginIdentifier;
     private String userId;

@@ -6,9 +6,12 @@ import jakarta.persistence.Table;
 
 import java.time.OffsetDateTime;
 
+@javax.persistence.Entity
+@javax.persistence.Table(name = "users")
 @Entity
 @Table(name = "users")
 public class User {
+    @javax.persistence.Id
     @Id
     private String userId;
     private UserState userState;
