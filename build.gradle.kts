@@ -1,5 +1,6 @@
 plugins {
     id("java")
+    id("jacoco")
 }
 
 group = "simcloud"
@@ -25,8 +26,18 @@ dependencies {
 
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation("org.mockito:mockito-core:5.17.0")
+    testImplementation("ch.qos.logback:logback-classic:1.5.18")
+}
+
+tasks.jacocoTestReport {
+    reports {
+        xml.required = true
+        xml.outputLocation = layout.buildDirectory.file("jacoco/jacocoTestReport.xml")
+    }
 }
 
 tasks.test {
     useJUnitPlatform()
+    finalizedBy(tasks.jacocoTestReport)
 }
