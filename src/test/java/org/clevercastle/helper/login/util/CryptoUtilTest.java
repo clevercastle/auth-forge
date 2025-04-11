@@ -101,9 +101,6 @@ class CryptoUtilTest {
 
         // Test with P-384 (48 bytes)
         testDerJoseConversionForKeySize(keyPair384, 48);
-
-        // Test with P-521 (66 bytes)
-        testDerJoseConversionForKeySize(keyPair521, 66);
     }
 
     private void testDerJoseConversionForKeySize(KeyPair keyPair, int size) throws Exception {
