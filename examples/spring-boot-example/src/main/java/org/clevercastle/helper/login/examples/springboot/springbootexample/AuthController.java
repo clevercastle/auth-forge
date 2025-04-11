@@ -1,6 +1,6 @@
 package org.clevercastle.helper.login.examples.springboot.springbootexample;
 
-import io.micrometer.common.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.clevercastle.helper.login.CastleException;
 import org.clevercastle.helper.login.User;
 import org.clevercastle.helper.login.UserRegisterRequest;
@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.net.http.HttpClient;
 import java.util.Base64;
 import java.util.List;
 
@@ -53,7 +52,6 @@ public class AuthController {
             })
             .build();
 
-
     private static final Oauth2ClientConfig githubClientConfig = Oauth2ClientConfig.builder()
             .uniqueId("github")
             .clientId("")
@@ -62,7 +60,7 @@ public class AuthController {
             .oauth2LoginUrl("https://github.com/login/oauth/authorize")
             .oauth2TokenUrl("https://github.com/login/oauth/access_token")
             .scopes(List.of("user:email"))
-            .httpClient(HttpClient.newBuilder().build())
+            .httpClient(new HttpClientImpl())
             .build();
 
 
@@ -95,12 +93,10 @@ public class AuthController {
     public String generateUrl(@RequestParam SsoType ssoType, @RequestParam String redirectUrl) {
         // decode basic authentication
         switch (ssoType) {
-            case google -> {
+            case google:
                 return userService.generate(googleClientConfig, redirectUrl);
-            }
-            case github -> {
+            case github:
                 return userService.generate(githubClientConfig, redirectUrl);
-            }
         }
         return null;
     }
@@ -108,12 +104,10 @@ public class AuthController {
     @GetMapping("auth/exchange")
     public UserWithToken exchange(@RequestParam SsoType ssoType, @RequestParam String code, @RequestParam String state, @RequestParam String redirectUrl) throws CastleException {
         switch (ssoType) {
-            case google -> {
+            case google:
                 return userService.exchange(googleClientConfig, code, state, redirectUrl);
-            }
-            case github -> {
+            case github:
                 return userService.exchange(githubClientConfig, code, state, redirectUrl);
-            }
         }
         return null;
     }

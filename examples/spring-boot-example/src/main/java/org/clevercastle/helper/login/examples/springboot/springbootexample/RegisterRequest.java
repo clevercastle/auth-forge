@@ -1,6 +1,6 @@
 package org.clevercastle.helper.login.examples.springboot.springbootexample;
 
-class RegisterRequest {
+public class RegisterRequest {
     private String email;
     private String password;
 
