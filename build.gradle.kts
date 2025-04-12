@@ -1,10 +1,12 @@
 plugins {
     id("java")
     id("jacoco")
+    id("com.vanniktech.maven.publish") version "0.31.0-rc2"
+    id("signing")
 }
 
 group = "org.clevercastle"
-version = "0.1.0-SNAPSHOT"
+version = "0.0.1-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -51,4 +53,32 @@ java {
 
 tasks.withType<JavaCompile>().configureEach {
     options.release.set(11)
+}
+
+mavenPublishing {
+    pom {
+        name.set("auth-forge")
+        description.set("A description of what my library does.")
+        inceptionYear.set("2025")
+        url.set("https://github.com/clevercastle/auth-forge/")
+        licenses {
+            license {
+                name.set("The Apache License, Version 2.0")
+                url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                distribution.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+            }
+        }
+        developers {
+            developer {
+                id.set("ivyxjc")
+                name.set("ivyxjc")
+                url.set("https://github.com/ivyxjc/")
+            }
+        }
+        scm {
+            url.set("https://github.com/clevercastle/auth-forge/")
+            connection.set("scm:git:git://github.com/clevercastle/auth-forge.git")
+            developerConnection.set("scm:git:ssh://git@github.com/clevercastle/auth-forge.git")
+        }
+    }
 }
