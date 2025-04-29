@@ -19,6 +19,7 @@ import java.util.UUID;
 
 public class JwtTokenService implements TokenService {
     private static final Base64.Encoder base64UrlEncoder = Base64.getUrlEncoder().withoutPadding();
+    private static final int REFRESH_TOKEN_LENGTH = 200;
 
     private final Config config;
     private final String clientId;
@@ -39,7 +40,7 @@ public class JwtTokenService implements TokenService {
         TokenHolder tokenHolder = new TokenHolder();
         tokenHolder.setAccessToken(generateOneToken(user, item, now.toEpochSecond(), expiredAt.toEpochSecond(), Scope.access));
         tokenHolder.setIdToken(generateOneToken(user, item, now.toEpochSecond(), expiredAt.toEpochSecond(), Scope.id));
-        // TODO: 2025/3/29 refresh token
+        tokenHolder.setRefreshToken(generateRefreshToken());
         tokenHolder.setExpiresIn(3600 * 8);
         tokenHolder.setExpiresAt(expiredAt);
         return tokenHolder;
@@ -87,5 +88,13 @@ public class JwtTokenService implements TokenService {
         byte[] signatureBytes = this.algorithm.sign(header.getBytes(StandardCharsets.UTF_8), payload.getBytes(StandardCharsets.UTF_8));
         String signature = base64UrlEncoder.encodeToString(signatureBytes);
         return String.format("%s.%s.%s", header, payload, signature);
+    }
+
+    public String generateRefreshToken() {
+        StringBuilder result = new StringBuilder();
+        while (result.length() < REFRESH_TOKEN_LENGTH) {
+            result.append(UUID.randomUUID().toString().replace("-", ""));
+        }
+        return result.substring(0, REFRESH_TOKEN_LENGTH);
     }
 }

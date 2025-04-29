@@ -7,5 +7,7 @@ public interface IUserLoginItemRepository {
 
     UserLoginItem getByLoginIdentifier(String loginIdentifier);
 
+    UserLoginItem getByUserSub(String userSub);
+
     void confirmLoginItem(String loginIdentifier);
 }

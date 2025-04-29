@@ -11,9 +11,13 @@ public interface UserService {
 
     UserWithToken login(String loginIdentifier, String password) throws CastleException;
 
-    Pair<User, UserLoginItem> get(String loginIdentifier) throws CastleException;
+    Pair<User, UserLoginItem> getByLoginIdentifier(String loginIdentifier) throws CastleException;
+
+    Pair<User, UserLoginItem> getByUserSub(String userSub) throws CastleException;
 
     String generate(Oauth2ClientConfig oauth2Client, String redirectUri);
+
+    UserWithToken refresh(User user, UserLoginItem userLoginItem, String refreshToken) throws CastleException;
 
     // used for sso login
     UserWithToken exchange(Oauth2ClientConfig clientConfig, String authorizationCode, String state, String redirectUrl) throws CastleException;

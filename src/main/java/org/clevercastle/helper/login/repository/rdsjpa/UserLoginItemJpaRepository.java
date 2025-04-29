@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import javax.transaction.Transactional;
 
 public interface UserLoginItemJpaRepository extends IUserLoginItemRepository {
+
     @Modifying
     @Transactional
     @Query("UPDATE UserLoginItem u\n" +
