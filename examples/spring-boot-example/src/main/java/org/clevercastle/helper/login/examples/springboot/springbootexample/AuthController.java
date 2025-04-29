@@ -73,9 +73,16 @@ public class AuthController {
     @PostMapping("auth/register")
     public User register(@RequestBody RegisterRequest request) throws CastleException {
         UserRegisterRequest userRegisterRequest = new UserRegisterRequest();
-        userRegisterRequest.setLoginIdentifier(request.getEmail());
+        userRegisterRequest.setLoginIdentifier("email#" + request.getEmail());
         userRegisterRequest.setPassword(request.getPassword());
+        userRegisterRequest.setLoginIdentifierPrefix("email");
         return userService.register(userRegisterRequest);
+    }
+
+    @GetMapping("auth/verify")
+    public UserWithToken verify(@RequestParam String loginIdentifier, @RequestParam String verificationCode) throws CastleException {
+        userService.verify("email#" + loginIdentifier, verificationCode);
+        return null;
     }
 
     @GetMapping("auth/login")
@@ -84,7 +91,7 @@ public class AuthController {
         authorization = authorization.replace("Basic ", "");
         // base64 decode
         String[] credentials = new String(Base64.getDecoder().decode(authorization)).split(":");
-        String loginIdentifier = credentials[0];
+        String loginIdentifier = "email#" + credentials[0];
         String password = credentials[1];
         return userService.login(loginIdentifier, password);
     }

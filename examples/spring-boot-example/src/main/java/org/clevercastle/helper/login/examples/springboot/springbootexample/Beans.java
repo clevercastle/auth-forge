@@ -1,6 +1,7 @@
 package org.clevercastle.helper.login.examples.springboot.springbootexample;
 
 import com.auth0.jwt.algorithms.Algorithm;
+import org.clevercastle.helper.login.Config;
 import org.clevercastle.helper.login.UserService;
 import org.clevercastle.helper.login.UserServiceImpl;
 import org.clevercastle.helper.login.repository.UserRepository;
@@ -53,7 +54,7 @@ public class Beans {
 
     @Bean
     public UserService userService(UserRepository userRepository, TokenService tokenService) {
-        return new UserServiceImpl(userRepository, tokenService);
+        return new UserServiceImpl(Config.builder().build(), userRepository, tokenService);
     }
 
 
