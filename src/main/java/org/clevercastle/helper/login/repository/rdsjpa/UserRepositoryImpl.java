@@ -6,10 +6,10 @@ import org.clevercastle.helper.login.UserLoginItem;
 import org.clevercastle.helper.login.repository.UserRepository;
 
 public class UserRepositoryImpl implements UserRepository {
-    private final UserModelRepository userModelRepository;
-    private final UserLoginItemRepository userLoginItemRepository;
+    private final IUserModelRepository userModelRepository;
+    private final IUserLoginItemRepository userLoginItemRepository;
 
-    public UserRepositoryImpl(UserModelRepository userModelRepository, UserLoginItemRepository userLoginItemRepository) {
+    public UserRepositoryImpl(IUserModelRepository userModelRepository, IUserLoginItemRepository userLoginItemRepository) {
         this.userModelRepository = userModelRepository;
         this.userLoginItemRepository = userLoginItemRepository;
     }
