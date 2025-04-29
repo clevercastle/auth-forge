@@ -10,4 +10,6 @@ spring:
         show-sql: true
         properties:
             hibernate:
+                type:
+                    preferred_enum_type: STRING
                 dialect: org.hibernate.dialect.PostgreSQLDialect
