@@ -24,6 +24,8 @@ dependencies {
 
     implementation("com.nimbusds:oauth2-oidc-sdk:11.23.1")
 
+    compileOnly("org.springframework.boot:spring-boot-starter-data-jpa:2.7.18")
+
     implementation("org.apache.commons:commons-lang3:3.17.0")
     implementation("org.slf4j:slf4j-api:2.0.17")
 

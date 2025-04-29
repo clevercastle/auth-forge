@@ -1,6 +1,8 @@
 package org.clevercastle.helper.login;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
@@ -19,11 +21,29 @@ import java.time.OffsetDateTime;
 @Entity
 @Table(name = "user_login_item")
 public class UserLoginItem {
+    public enum Type {
+        raw,
+        sso,
+        oauth2
+    }
+
+    public enum State {
+        UNCONFIRMED,
+        ACTIVE,
+    }
+
     @javax.persistence.Id
     @Id
     private String loginIdentifier;
-    private String userId;
+    private String loginIdentifierPrefix;
+    @javax.persistence.Enumerated(javax.persistence.EnumType.STRING)
+    @Enumerated(EnumType.STRING)
+    private Type type;
     private String userSub;
+    private String userId;
+    @javax.persistence.Enumerated(javax.persistence.EnumType.STRING)
+    @Enumerated(EnumType.STRING)
+    private State state;
 
     // used for login item verification (loginType == raw)
     private String verificationCode;
@@ -32,12 +52,29 @@ public class UserLoginItem {
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;
 
-    public String getUserId() {
-        return userId;
+
+    public String getLoginIdentifier() {
+        return loginIdentifier;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setLoginIdentifier(String loginIdentifier) {
+        this.loginIdentifier = loginIdentifier;
+    }
+
+    public String getLoginIdentifierPrefix() {
+        return loginIdentifierPrefix;
+    }
+
+    public void setLoginIdentifierPrefix(String loginIdentifierPrefix) {
+        this.loginIdentifierPrefix = loginIdentifierPrefix;
+    }
+
+    public Type getType() {
+        return type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
     }
 
     public String getUserSub() {
@@ -48,12 +85,20 @@ public class UserLoginItem {
         this.userSub = userSub;
     }
 
-    public String getLoginIdentifier() {
-        return loginIdentifier;
+    public String getUserId() {
+        return userId;
     }
 
-    public void setLoginIdentifier(String loginIdentifier) {
-        this.loginIdentifier = loginIdentifier;
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public State getState() {
+        return state;
+    }
+
+    public void setState(State state) {
+        this.state = state;
     }
 
     public String getVerificationCode() {

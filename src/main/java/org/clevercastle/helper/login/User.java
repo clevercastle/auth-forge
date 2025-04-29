@@ -1,6 +1,8 @@
 package org.clevercastle.helper.login;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
@@ -14,14 +16,11 @@ public class User {
     @javax.persistence.Id
     @Id
     private String userId;
+    @javax.persistence.Enumerated(javax.persistence.EnumType.STRING)
+    @Enumerated(EnumType.STRING)
     private UserState userState;
     private String hashedPassword;
 
-    // used for user verification (loginType == raw)
-    private String verificationCode;
-    private OffsetDateTime verificationCodeExpiredAt;
-
-    // used for user hashed password (loginType == raw)
     private String resetPasswordCode;
     private OffsetDateTime resetPasswordCodeExpiredAt;
 
@@ -52,22 +51,6 @@ public class User {
 
     public void setHashedPassword(String hashedPassword) {
         this.hashedPassword = hashedPassword;
-    }
-
-    public String getVerificationCode() {
-        return verificationCode;
-    }
-
-    public void setVerificationCode(String verificationCode) {
-        this.verificationCode = verificationCode;
-    }
-
-    public OffsetDateTime getVerificationCodeExpiredAt() {
-        return verificationCodeExpiredAt;
-    }
-
-    public void setVerificationCodeExpiredAt(OffsetDateTime verificationCodeExpiredAt) {
-        this.verificationCodeExpiredAt = verificationCodeExpiredAt;
     }
 
     public String getResetPasswordCode() {

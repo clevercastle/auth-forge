@@ -20,6 +20,7 @@ import org.clevercastle.helper.login.oauth2.Oauth2ClientConfig;
 import org.clevercastle.helper.login.oauth2.Oauth2User;
 import org.clevercastle.helper.login.repository.UserRepository;
 import org.clevercastle.helper.login.token.TokenService;
+import org.clevercastle.helper.login.util.CodeUtil;
 import org.clevercastle.helper.login.util.HashUtil;
 import org.clevercastle.helper.login.util.IdUtil;
 import org.clevercastle.helper.login.util.TimeUtils;
@@ -35,11 +36,14 @@ import java.util.UUID;
 
 public class UserServiceImpl implements UserService {
     private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
+    private final Config config;
     private final UserRepository userRepository;
     private final TokenService tokenService;
 
-    public UserServiceImpl(UserRepository userRepository,
+    public UserServiceImpl(Config config,
+                           UserRepository userRepository,
                            TokenService tokenService) {
+        this.config = config;
         this.userRepository = userRepository;
         this.tokenService = tokenService;
     }
@@ -58,10 +62,7 @@ public class UserServiceImpl implements UserService {
         var now = TimeUtils.now();
         user = new User();
         user.setUserId(userId);
-        // TODO: 2025/3/28 verification code
         user.setUserState(UserState.ACTIVE);
-        user.setVerificationCode(null);
-        user.setVerificationCodeExpiredAt(null);
 
         user.setHashedPassword(HashUtil.hashPassword(userRegisterRequest.getPassword()));
 
@@ -71,14 +72,34 @@ public class UserServiceImpl implements UserService {
         UserLoginItem userLoginItem = new UserLoginItem();
         userLoginItem.setUserId(userId);
         userLoginItem.setUserSub(UUID.randomUUID().toString());
+        userLoginItem.setType(UserLoginItem.Type.raw);
         userLoginItem.setLoginIdentifier(userRegisterRequest.getLoginIdentifier());
-        // TODO: 2025/3/28 verification code
-        userLoginItem.setVerificationCode(null);
-        userLoginItem.setVerificationCodeExpiredAt(null);
+        userLoginItem.setLoginIdentifierPrefix(userRegisterRequest.getLoginIdentifierPrefix());
+
+        userLoginItem.setState(UserLoginItem.State.UNCONFIRMED);
+        userLoginItem.setVerificationCode(CodeUtil.generateCode(8));
+        userLoginItem.setVerificationCodeExpiredAt(TimeUtils.now().plusSeconds(this.config.getVerificationCodeExpireTime()));
         userLoginItem.setCreatedAt(now);
         userLoginItem.setUpdatedAt(now);
         this.userRepository.save(user, userLoginItem);
         return user;
+    }
+
+
+    @Override
+    public void verify(String loginIdentifier, String verificationCode) throws CastleException {
+        Pair<User, UserLoginItem> pair = this.userRepository.get(loginIdentifier);
+        UserLoginItem userLoginItem = pair.getRight();
+        if (userLoginItem == null) {
+            throw new UserNotFoundException();
+        }
+        if (StringUtils.isBlank(verificationCode)) {
+            throw new CastleException();
+        }
+        if (!StringUtils.equals(verificationCode, userLoginItem.getVerificationCode())) {
+            throw new CastleException();
+        }
+        this.userRepository.confirmLoginItem(loginIdentifier);
     }
 
     @Override
