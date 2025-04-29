@@ -7,6 +7,8 @@ public interface UserService {
     // used for username/password, email/password, mobile/password
     User register(UserRegisterRequest request) throws CastleException;
 
+    void verify(String loginIdentifier, String verificationCode) throws CastleException;
+
     UserWithToken login(String loginIdentifier, String password) throws CastleException;
 
     Pair<User, UserLoginItem> get(String loginIdentifier) throws CastleException;

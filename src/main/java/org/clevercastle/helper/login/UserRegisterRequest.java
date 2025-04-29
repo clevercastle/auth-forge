@@ -2,6 +2,7 @@ package org.clevercastle.helper.login;
 
 public class UserRegisterRequest {
     private String loginIdentifier;
+    private String loginIdentifierPrefix;
     private String password;
 
     public String getLoginIdentifier() {
@@ -10,6 +11,14 @@ public class UserRegisterRequest {
 
     public void setLoginIdentifier(String loginIdentifier) {
         this.loginIdentifier = loginIdentifier;
+    }
+
+    public String getLoginIdentifierPrefix() {
+        return loginIdentifierPrefix;
+    }
+
+    public void setLoginIdentifierPrefix(String loginIdentifierPrefix) {
+        this.loginIdentifierPrefix = loginIdentifierPrefix;
     }
 
     public String getPassword() {

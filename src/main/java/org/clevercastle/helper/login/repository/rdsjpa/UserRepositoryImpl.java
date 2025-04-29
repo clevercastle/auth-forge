@@ -38,4 +38,9 @@ public class UserRepositoryImpl implements UserRepository {
         }
         return Pair.of(null, null);
     }
+
+    @Override
+    public void confirmLoginItem(String loginIdentifier) {
+        userLoginItemRepository.confirmLoginItem(loginIdentifier);
+    }
 }

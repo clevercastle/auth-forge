@@ -1,3 +1,3 @@
-rootProject.name = "login-helper"
+rootProject.name = "auth-forge"
 
 include("examples:spring-boot-example")

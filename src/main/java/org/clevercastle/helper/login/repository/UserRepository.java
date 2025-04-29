@@ -12,4 +12,6 @@ public interface UserRepository {
     void saveLoginItem(UserLoginItem loginItem);
 
     Pair<User, UserLoginItem> get(String loginIdentifier);
+
+    void confirmLoginItem(String loginIdentifier);
 }
