@@ -24,8 +24,6 @@ public class User {
     private String resetPasswordCode;
     private OffsetDateTime resetPasswordCodeExpiredAt;
 
-//    private Set<RefreshToken> refreshTokens;
-
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;
 

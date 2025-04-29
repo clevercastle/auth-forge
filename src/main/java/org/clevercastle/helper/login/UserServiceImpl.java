@@ -28,6 +28,7 @@ import org.clevercastle.helper.login.verification.VerificationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.transaction.Transactional;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -54,7 +55,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User register(UserRegisterRequest userRegisterRequest) throws CastleException {
-        Pair<User, UserLoginItem> pair = this.get(userRegisterRequest.getLoginIdentifier());
+        Pair<User, UserLoginItem> pair = this.getByLoginIdentifier(userRegisterRequest.getLoginIdentifier());
         User user = pair.getLeft();
         if (user != null) {
             if (UserState.DELETED != user.getUserState()) {
@@ -93,7 +94,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void verify(String loginIdentifier, String verificationCode) throws CastleException {
-        Pair<User, UserLoginItem> pair = this.userRepository.get(loginIdentifier);
+        Pair<User, UserLoginItem> pair = this.userRepository.getByLoginIdentifier(loginIdentifier);
         UserLoginItem userLoginItem = pair.getRight();
         if (userLoginItem == null) {
             throw new UserNotFoundException();
@@ -131,7 +132,7 @@ public class UserServiceImpl implements UserService {
         if (StringUtils.isBlank(oauth2User.getLoginIdentifier())) {
             throw new CastleException();
         }
-        Pair<User, UserLoginItem> pair = get(oauth2User.getLoginIdentifier());
+        Pair<User, UserLoginItem> pair = getByLoginIdentifier(oauth2User.getLoginIdentifier());
         var user = pair.getLeft();
         var userLoginItem = pair.getRight();
         if (userLoginItem == null) {
@@ -153,6 +154,7 @@ public class UserServiceImpl implements UserService {
             userLoginItem.setUpdatedAt(now);
             this.userRepository.save(user, userLoginItem);
             TokenHolder tokenHolder = tokenService.generateToken(user, userLoginItem);
+            userRepository.addRefreshToken(user, tokenHolder.getRefreshToken(), tokenHolder.getExpiresAt());
             return new UserWithToken(user, tokenHolder);
         } else {
             // login process
@@ -160,13 +162,14 @@ public class UserServiceImpl implements UserService {
                 throw new CastleException("");
             }
             TokenHolder tokenHolder = tokenService.generateToken(user, userLoginItem);
+            userRepository.addRefreshToken(user, tokenHolder.getRefreshToken(), tokenHolder.getExpiresAt());
             return new UserWithToken(user, tokenHolder);
         }
     }
 
     @Override
     public UserWithToken login(String loginIdentifier, String password) throws CastleException {
-        Pair<User, UserLoginItem> pair = get(loginIdentifier);
+        Pair<User, UserLoginItem> pair = getByLoginIdentifier(loginIdentifier);
         var user = pair.getLeft();
         var userLoginItem = pair.getRight();
         if (user == null) {
@@ -183,8 +186,26 @@ public class UserServiceImpl implements UserService {
             throw new CastleException("Incorrect password");
         }
         TokenHolder tokenHolder = tokenService.generateToken(user, userLoginItem);
+        userRepository.addRefreshToken(user, tokenHolder.getRefreshToken(), tokenHolder.getExpiresAt());
         return new UserWithToken(user, tokenHolder);
     }
+
+    @Override
+    @Transactional
+    public UserWithToken refresh(User user, UserLoginItem userLoginItem, String refreshToken) throws CastleException {
+        if (UserState.ACTIVE != user.getUserState()) {
+            throw new CastleException("");
+        }
+        boolean verified = userRepository.verifyRefreshToken(user, refreshToken);
+        if (verified) {
+            TokenHolder tokenHolder = tokenService.generateToken(user, userLoginItem);
+            userRepository.addRefreshToken(user, tokenHolder.getRefreshToken(), tokenHolder.getExpiresAt());
+            return new UserWithToken(user, tokenHolder);
+        } else {
+            throw new CastleException("Fail to refresh");
+        }
+    }
+
 
     /**
      * get id token from oauth2 provider
@@ -242,9 +263,12 @@ public class UserServiceImpl implements UserService {
 
     @Nonnull
     @Override
-    public Pair<User, UserLoginItem> get(String loginIdentifier) throws CastleException {
-        return userRepository.get(loginIdentifier);
+    public Pair<User, UserLoginItem> getByLoginIdentifier(String loginIdentifier) throws CastleException {
+        return userRepository.getByLoginIdentifier(loginIdentifier);
     }
 
-
+    @Override
+    public Pair<User, UserLoginItem> getByUserSub(String userSub) throws CastleException {
+        return userRepository.getByUserSub(userSub);
+    }
 }
