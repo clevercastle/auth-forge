@@ -24,6 +24,7 @@ import org.clevercastle.helper.login.util.CodeUtil;
 import org.clevercastle.helper.login.util.HashUtil;
 import org.clevercastle.helper.login.util.IdUtil;
 import org.clevercastle.helper.login.util.TimeUtils;
+import org.clevercastle.helper.login.verification.VerificationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,13 +40,16 @@ public class UserServiceImpl implements UserService {
     private final Config config;
     private final UserRepository userRepository;
     private final TokenService tokenService;
+    private final VerificationService verificationService;
 
     public UserServiceImpl(Config config,
                            UserRepository userRepository,
-                           TokenService tokenService) {
+                           TokenService tokenService,
+                           VerificationService verificationService) {
         this.config = config;
         this.userRepository = userRepository;
         this.tokenService = tokenService;
+        this.verificationService = verificationService;
     }
 
     @Override
@@ -82,6 +86,7 @@ public class UserServiceImpl implements UserService {
         userLoginItem.setCreatedAt(now);
         userLoginItem.setUpdatedAt(now);
         this.userRepository.save(user, userLoginItem);
+        this.verificationService.sendVerificationCode(userLoginItem.getLoginIdentifier(), userLoginItem.getVerificationCode());
         return user;
     }
 
@@ -99,7 +104,7 @@ public class UserServiceImpl implements UserService {
         if (!StringUtils.equals(verificationCode, userLoginItem.getVerificationCode())) {
             throw new CastleException();
         }
-        this.userRepository.confirmLoginItem(loginIdentifier);
+        this.verificationService.verify(loginIdentifier, verificationCode);
     }
 
     @Override
