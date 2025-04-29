@@ -10,6 +10,7 @@ import org.clevercastle.helper.login.repository.rdsjpa.UserModelRepository;
 import org.clevercastle.helper.login.repository.rdsjpa.UserRepositoryImpl;
 import org.clevercastle.helper.login.token.TokenService;
 import org.clevercastle.helper.login.token.jwt.JwtTokenService;
+import org.clevercastle.helper.login.verification.DummyVerificationService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -53,8 +54,8 @@ public class Beans {
     }
 
     @Bean
-    public UserService userService(UserRepository userRepository, TokenService tokenService) {
-        return new UserServiceImpl(Config.builder().build(), userRepository, tokenService);
+    public UserService userService(UserRepository userRepository, UserLoginItemRepository userLoginItemRepository, TokenService tokenService) {
+        return new UserServiceImpl(Config.builder().build(), userRepository, tokenService, new DummyVerificationService(userLoginItemRepository));
     }
 
 
