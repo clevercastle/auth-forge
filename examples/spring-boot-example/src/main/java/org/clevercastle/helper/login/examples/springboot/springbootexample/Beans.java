@@ -7,6 +7,7 @@ import org.clevercastle.helper.login.UserServiceImpl;
 import org.clevercastle.helper.login.repository.UserRepository;
 import org.clevercastle.helper.login.repository.rdsjpa.IUserLoginItemRepository;
 import org.clevercastle.helper.login.repository.rdsjpa.IUserModelRepository;
+import org.clevercastle.helper.login.repository.rdsjpa.IUserRefreshTokenMappingRepository;
 import org.clevercastle.helper.login.repository.rdsjpa.UserRepositoryImpl;
 import org.clevercastle.helper.login.token.TokenService;
 import org.clevercastle.helper.login.token.jwt.JwtTokenService;
@@ -31,8 +32,9 @@ import java.util.Base64;
 public class Beans {
     @Bean
     public UserRepository userRepository(IUserModelRepository userModelRepository,
-                                         IUserLoginItemRepository userLoginItemRepository) {
-        return new UserRepositoryImpl(userModelRepository, userLoginItemRepository);
+                                         IUserLoginItemRepository userLoginItemRepository,
+                                         IUserRefreshTokenMappingRepository userRefreshTokenMappingRepository) {
+        return new UserRepositoryImpl(userModelRepository, userLoginItemRepository, userRefreshTokenMappingRepository);
     }
 
     @Bean
@@ -50,7 +52,7 @@ public class Beans {
 
         // Validate the key type and curve
         var algorithm = Algorithm.ECDSA256((ECPublicKey) publicKey, (ECPrivateKey) privateKey);
-        return new JwtTokenService(algorithm, "kid");
+        return new JwtTokenService(Config.builder().build(), "client-01", "kid", algorithm);
     }
 
     @Bean
