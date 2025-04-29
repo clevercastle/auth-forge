@@ -167,6 +167,9 @@ public class UserServiceImpl implements UserService {
         if (user == null) {
             throw new UserNotFoundException();
         }
+        if (UserLoginItem.State.ACTIVE != userLoginItem.getState()) {
+            throw new CastleException("Current login is not confirmed");
+        }
         if (UserState.ACTIVE != user.getUserState()) {
             throw new CastleException("");
         }
