@@ -5,8 +5,8 @@ import org.clevercastle.helper.login.Config;
 import org.clevercastle.helper.login.UserService;
 import org.clevercastle.helper.login.UserServiceImpl;
 import org.clevercastle.helper.login.repository.UserRepository;
-import org.clevercastle.helper.login.repository.rdsjpa.UserLoginItemRepository;
-import org.clevercastle.helper.login.repository.rdsjpa.UserModelRepository;
+import org.clevercastle.helper.login.repository.rdsjpa.IUserLoginItemRepository;
+import org.clevercastle.helper.login.repository.rdsjpa.IUserModelRepository;
 import org.clevercastle.helper.login.repository.rdsjpa.UserRepositoryImpl;
 import org.clevercastle.helper.login.token.TokenService;
 import org.clevercastle.helper.login.token.jwt.JwtTokenService;
@@ -30,8 +30,8 @@ import java.util.Base64;
 @Configuration
 public class Beans {
     @Bean
-    public UserRepository userRepository(UserModelRepository userModelRepository,
-                                         UserLoginItemRepository userLoginItemRepository) {
+    public UserRepository userRepository(IUserModelRepository userModelRepository,
+                                         IUserLoginItemRepository userLoginItemRepository) {
         return new UserRepositoryImpl(userModelRepository, userLoginItemRepository);
     }
 
@@ -54,7 +54,7 @@ public class Beans {
     }
 
     @Bean
-    public UserService userService(UserRepository userRepository, UserLoginItemRepository userLoginItemRepository, TokenService tokenService) {
+    public UserService userService(UserRepository userRepository, IUserLoginItemRepository userLoginItemRepository, TokenService tokenService) {
         return new UserServiceImpl(Config.builder().build(), userRepository, tokenService, new DummyVerificationService(userLoginItemRepository));
     }
 
