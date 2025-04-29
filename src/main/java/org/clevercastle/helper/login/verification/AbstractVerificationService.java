@@ -3,13 +3,13 @@ package org.clevercastle.helper.login.verification;
 import org.apache.commons.lang3.StringUtils;
 import org.clevercastle.helper.login.CastleException;
 import org.clevercastle.helper.login.UserLoginItem;
-import org.clevercastle.helper.login.repository.rdsjpa.UserLoginItemRepository;
+import org.clevercastle.helper.login.repository.rdsjpa.IUserLoginItemRepository;
 import org.clevercastle.helper.login.util.TimeUtils;
 
 public abstract class AbstractVerificationService implements VerificationService {
-    private final UserLoginItemRepository userLoginItemRepository;
+    private final IUserLoginItemRepository userLoginItemRepository;
 
-    protected AbstractVerificationService(UserLoginItemRepository userLoginItemRepository) {
+    protected AbstractVerificationService(IUserLoginItemRepository userLoginItemRepository) {
         this.userLoginItemRepository = userLoginItemRepository;
     }
 
@@ -19,13 +19,17 @@ public abstract class AbstractVerificationService implements VerificationService
             throw new CastleException();
         }
         UserLoginItem userLoginItem = userLoginItemRepository.getByLoginIdentifier(loginIdentifier);
-        if (userLoginItem.getVerificationCodeExpiredAt() != null && userLoginItem.getVerificationCodeExpiredAt().isAfter(TimeUtils.now())) {
-            if (verificationCode.equals(userLoginItem.getVerificationCode())) {
-                userLoginItemRepository.confirmLoginItem(loginIdentifier);
-            }
+        if (StringUtils.isBlank(verificationCode)) {
+            throw new CastleException();
         }
-        throw new CastleException();
+        if (StringUtils.isBlank(userLoginItem.getVerificationCode()) || userLoginItem.getVerificationCodeExpiredAt() == null) {
+            throw new CastleException();
+        }
+        if (userLoginItem.getVerificationCodeExpiredAt().isBefore(TimeUtils.now())) {
+            throw new CastleException();
+        }
+        if (verificationCode.equals(userLoginItem.getVerificationCode())) {
+            userLoginItemRepository.confirmLoginItem(loginIdentifier);
+        }
     }
-
-
 }

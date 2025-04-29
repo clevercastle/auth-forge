@@ -1,17 +1,12 @@
 package org.clevercastle.helper.login.repository.rdsjpa;
 
-import org.clevercastle.helper.login.UserLoginItem;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import javax.transaction.Transactional;
 
-public interface UserLoginItemRepository {
-    UserLoginItem save(UserLoginItem userLoginItem);
-
-    UserLoginItem getByLoginIdentifier(String loginIdentifier);
-
+public interface UserLoginItemJpaRepository extends IUserLoginItemRepository {
     @Modifying
     @Transactional
     @Query("UPDATE UserLoginItem u\n" +
