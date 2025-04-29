@@ -1,8 +1,8 @@
 package org.clevercastle.helper.login.token.jwt;
 
 import com.auth0.jwt.algorithms.Algorithm;
-import org.apache.commons.lang3.StringUtils;
 import org.clevercastle.helper.login.CastleException;
+import org.clevercastle.helper.login.Config;
 import org.clevercastle.helper.login.TokenHolder;
 import org.clevercastle.helper.login.User;
 import org.clevercastle.helper.login.UserLoginItem;
@@ -15,14 +15,19 @@ import java.time.OffsetDateTime;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class JwtTokenService implements TokenService {
     private static final Base64.Encoder base64UrlEncoder = Base64.getUrlEncoder().withoutPadding();
 
+    private final Config config;
+    private final String clientId;
     private final String keyId;
     private final Algorithm algorithm;
 
-    public JwtTokenService(Algorithm algorithm, String keyId) {
+    public JwtTokenService(Config config, String clientId, String keyId, Algorithm algorithm) {
+        this.config = config;
+        this.clientId = clientId;
         this.keyId = keyId;
         this.algorithm = algorithm;
     }
@@ -30,32 +35,52 @@ public class JwtTokenService implements TokenService {
     @Override
     public TokenHolder generateToken(User user, UserLoginItem item) throws CastleException {
         OffsetDateTime now = TimeUtils.now();
-        // todo customize the expire time
-        OffsetDateTime expiredAt = now.plusHours(8);
+        OffsetDateTime expiredAt = now.plusSeconds(config.getTokenExpireTime());
         TokenHolder tokenHolder = new TokenHolder();
-        tokenHolder.setAccessToken(generateOneToken(user, item, now.toEpochSecond(), expiredAt.toEpochSecond()));
-        tokenHolder.setIdToken(generateOneToken(user, item, now.toEpochSecond(), expiredAt.toEpochSecond()));
+        tokenHolder.setAccessToken(generateOneToken(user, item, now.toEpochSecond(), expiredAt.toEpochSecond(), Scope.access));
+        tokenHolder.setIdToken(generateOneToken(user, item, now.toEpochSecond(), expiredAt.toEpochSecond(), Scope.id));
         // TODO: 2025/3/29 refresh token
         tokenHolder.setExpiresIn(3600 * 8);
         tokenHolder.setExpiresAt(expiredAt);
         return tokenHolder;
     }
 
-    public String generateOneToken(User user, UserLoginItem item, long iat, long exp) throws CastleException {
+    public Map<String, Object> genAccessTokenPayloadMap(User user, UserLoginItem item, long iat, long exp) {
+        Map<String, Object> payloadMap = new HashMap<>();
+        payloadMap.put("sub", item.getUserSub());
+        payloadMap.put("iat", iat);
+        payloadMap.put("exp", exp);
+        payloadMap.put("client_id", clientId);
+        payloadMap.put("jti", UUID.randomUUID().toString());
+        return payloadMap;
+    }
+
+    public Map<String, Object> genIdTokenPayloadMap(User user, UserLoginItem item, long iat, long exp) {
+        Map<String, Object> payloadMap = new HashMap<>();
+        payloadMap.put("sub", item.getUserSub());
+        payloadMap.put("iat", iat);
+        payloadMap.put("exp", exp);
+        payloadMap.put("aud", clientId);
+        return payloadMap;
+    }
+
+    public String generateOneToken(User user, UserLoginItem item, long iat, long exp, TokenService.Scope scope) throws CastleException {
         Map<String, Object> headerMap = new HashMap<>();
         headerMap.put("alg", algorithm.getName());
         headerMap.put("kid", keyId);
 
         Map<String, Object> payloadMap = new HashMap<>();
-        if (StringUtils.isNotBlank(item.getUserSub())) {
-            payloadMap.put("sub", item.getUserSub());
+        switch (scope) {
+            case access:
+                payloadMap = genAccessTokenPayloadMap(user, item, iat, exp);
+                break;
+            case id:
+                payloadMap = genIdTokenPayloadMap(user, item, iat, exp);
+                break;
         }
-        payloadMap.put("iat", iat);
-        payloadMap.put("exp", exp);
 
         String headerJson = JsonUtil.toJson(headerMap);
         String payloadJson = JsonUtil.toJson(payloadMap);
-
 
         String header = base64UrlEncoder.encodeToString(headerJson.getBytes(StandardCharsets.UTF_8));
         String payload = base64UrlEncoder.encodeToString(payloadJson.getBytes(StandardCharsets.UTF_8));
