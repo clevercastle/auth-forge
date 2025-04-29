@@ -1,8 +1,12 @@
 package org.clevercastle.helper.login.examples.springboot.springbootexample;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.clevercastle.helper.login.CastleException;
 import org.clevercastle.helper.login.User;
+import org.clevercastle.helper.login.UserLoginItem;
 import org.clevercastle.helper.login.UserRegisterRequest;
 import org.clevercastle.helper.login.UserService;
 import org.clevercastle.helper.login.UserWithToken;
@@ -16,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.text.ParseException;
 import java.util.Base64;
 import java.util.List;
 
@@ -94,6 +99,24 @@ public class AuthController {
         String loginIdentifier = "email#" + credentials[0];
         String password = credentials[1];
         return userService.login(loginIdentifier, password);
+    }
+
+    @GetMapping("auth/refresh")
+    public UserWithToken login(@RequestHeader String authorization, @RequestBody RefreshTokenRequest refreshToken) throws CastleException, ParseException {
+        // decode basic authentication
+        authorization = authorization.replace("Bearer ", "");
+        // TODO: 2025/4/29 verify the token
+        DecodedJWT jwt = JWT.decode(authorization);
+        final String userSub = jwt.getSubject();
+        if (StringUtils.isBlank(userSub)) {
+            throw new CastleException("<UNK>");
+        }
+        userService.getByLoginIdentifier(userSub);
+        Pair<User, UserLoginItem> pair = userService.getByUserSub(userSub);
+        if (pair.getLeft() == null || pair.getRight() == null) {
+            throw new CastleException("<UNK>");
+        }
+        return userService.refresh(pair.getLeft(), pair.getRight(), refreshToken.getRefreshToken());
     }
 
     @GetMapping("auth/sso/url")
