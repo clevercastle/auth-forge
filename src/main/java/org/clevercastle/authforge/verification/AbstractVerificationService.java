@@ -1,16 +1,18 @@
 package org.clevercastle.authforge.verification;
 
 import org.apache.commons.lang3.StringUtils;
-import org.clevercastle.authforge.CastleException;
-import org.clevercastle.authforge.UserLoginItem;
-import org.clevercastle.authforge.repository.rdsjpa.IUserLoginItemRepository;
+import org.apache.commons.lang3.tuple.Pair;
+import org.clevercastle.authforge.exception.CastleException;
+import org.clevercastle.authforge.entity.User;
+import org.clevercastle.authforge.entity.UserLoginItem;
+import org.clevercastle.authforge.repository.UserRepository;
 import org.clevercastle.authforge.util.TimeUtils;
 
 public abstract class AbstractVerificationService implements VerificationService {
-    private final IUserLoginItemRepository userLoginItemRepository;
+    private final UserRepository userRepository;
 
-    protected AbstractVerificationService(IUserLoginItemRepository userLoginItemRepository) {
-        this.userLoginItemRepository = userLoginItemRepository;
+    protected AbstractVerificationService(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -18,7 +20,11 @@ public abstract class AbstractVerificationService implements VerificationService
         if (StringUtils.isBlank(verificationCode)) {
             throw new CastleException();
         }
-        UserLoginItem userLoginItem = userLoginItemRepository.getByLoginIdentifier(loginIdentifier);
+        Pair<User, UserLoginItem> pair = userRepository.getByLoginIdentifier(loginIdentifier);
+        UserLoginItem userLoginItem = pair.getRight();
+        if (userLoginItem == null) {
+            throw new CastleException();
+        }
         if (StringUtils.isBlank(verificationCode)) {
             throw new CastleException();
         }
@@ -29,7 +35,7 @@ public abstract class AbstractVerificationService implements VerificationService
             throw new CastleException();
         }
         if (verificationCode.equals(userLoginItem.getVerificationCode())) {
-            userLoginItemRepository.confirmLoginItem(loginIdentifier);
+            userRepository.confirmLoginItem(loginIdentifier);
         }
     }
 }

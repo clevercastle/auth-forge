@@ -1,8 +1,8 @@
 package org.clevercastle.authforge.repository.rdsjpa;
 
-import org.clevercastle.authforge.UserRefreshTokenMapping;
+import org.clevercastle.authforge.entity.UserRefreshTokenMapping;
 
-public interface IUserRefreshTokenMappingRepository {
+public interface RdsJpaUserRefreshTokenMappingRepository {
     UserRefreshTokenMapping getByUserIdAndRefreshToken(String userIed, String refreshToken);
 
     void deleteByUserIdAndRefreshToken(String userIed, String refreshToken);

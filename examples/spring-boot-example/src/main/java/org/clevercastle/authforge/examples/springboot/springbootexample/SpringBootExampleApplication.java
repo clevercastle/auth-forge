@@ -1,6 +1,6 @@
 package org.clevercastle.authforge.examples.springboot.springbootexample;
 
-import org.clevercastle.authforge.User;
+import org.clevercastle.authforge.entity.User;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;

@@ -5,7 +5,7 @@ import com.nimbusds.oauth2.sdk.TokenResponse;
 import com.nimbusds.oauth2.sdk.http.HTTPRequest;
 import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.token.AccessTokenType;
-import org.clevercastle.authforge.CastleException;
+import org.clevercastle.authforge.exception.CastleException;
 import org.clevercastle.authforge.http.HttpRequest;
 import org.clevercastle.authforge.http.HttpResponse;
 import org.clevercastle.authforge.http.IHttpClient;

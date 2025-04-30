@@ -1,18 +1,20 @@
 package org.clevercastle.authforge.repository.rdsjpa;
 
+import org.clevercastle.authforge.entity.UserLoginItem;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
-import javax.transaction.Transactional;
+public interface RdsJpaUserLoginItemRepository {
+    UserLoginItem save(UserLoginItem userLoginItem);
 
-public interface UserLoginItemJpaRepository extends IUserLoginItemRepository {
+    UserLoginItem getByLoginIdentifier(String loginIdentifier);
+
+    UserLoginItem getByUserSub(String userSub);
 
     @Modifying
-    @Transactional
     @Query("UPDATE UserLoginItem u\n" +
             "            SET u.state = 'ACTIVE', \n" +
             "                u.verificationCode = NULL\n" +
             "            WHERE u.loginIdentifier = :loginIdentifier")
-    void confirmLoginItem(@Param("loginIdentifier") String loginIdentifier);
+    void confirmLoginItem(String loginIdentifier);
 }

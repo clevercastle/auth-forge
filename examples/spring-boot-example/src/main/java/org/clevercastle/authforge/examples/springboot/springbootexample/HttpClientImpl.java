@@ -7,7 +7,7 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.util.Timeout;
-import org.clevercastle.authforge.CastleException;
+import org.clevercastle.authforge.exception.CastleException;
 import org.clevercastle.authforge.http.HttpRequest;
 import org.clevercastle.authforge.http.HttpResponse;
 import org.clevercastle.authforge.http.IHttpClient;

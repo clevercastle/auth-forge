@@ -1,6 +1,6 @@
 package org.clevercastle.authforge.util;
 
-import org.clevercastle.authforge.CastleException;
+import org.clevercastle.authforge.exception.CastleException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

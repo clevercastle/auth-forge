@@ -12,7 +12,7 @@ import com.nimbusds.oauth2.sdk.http.HTTPRequest;
 import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import org.apache.commons.lang3.StringUtils;
-import org.clevercastle.authforge.CastleException;
+import org.clevercastle.authforge.exception.CastleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

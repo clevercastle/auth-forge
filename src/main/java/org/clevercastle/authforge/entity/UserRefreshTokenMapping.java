@@ -1,10 +1,10 @@
-package org.clevercastle.authforge;
+package org.clevercastle.authforge.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.Table;
-import org.clevercastle.authforge.repository.rdsjpa.UserRefreshTokenMappingId;
+import org.clevercastle.authforge.repository.rdsjpa.RdsJpaUserRefreshTokenMappingId;
 
 import java.time.OffsetDateTime;
 
@@ -12,8 +12,8 @@ import java.time.OffsetDateTime;
 @javax.persistence.Table(name = "user_refresh_token")
 @Entity
 @Table(name = "user_refresh_token")
-@javax.persistence.IdClass(UserRefreshTokenMappingId.class)
-@IdClass(UserRefreshTokenMappingId.class)
+@javax.persistence.IdClass(RdsJpaUserRefreshTokenMappingId.class)
+@IdClass(RdsJpaUserRefreshTokenMappingId.class)
 public class UserRefreshTokenMapping {
     @javax.persistence.Id
     @Id
