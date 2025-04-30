@@ -22,8 +22,9 @@ public class UserRefreshTokenMapping {
     @Id
     private String refreshToken;
 
-    private OffsetDateTime createdAt;
     private OffsetDateTime expiredAt;
+
+    private OffsetDateTime createdAt;
 
 
     public String getUserId() {

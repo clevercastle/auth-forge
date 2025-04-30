@@ -24,6 +24,9 @@ dependencies {
 
     implementation("com.nimbusds:oauth2-oidc-sdk:11.23.1")
 
+    implementation("software.amazon.awssdk:dynamodb:2.31.31")
+    implementation("software.amazon.awssdk:dynamodb-enhanced:2.31.31")
+
     compileOnly("org.springframework.boot:spring-boot-starter-data-jpa:2.7.18")
 
     implementation("org.apache.commons:commons-lang3:3.17.0")

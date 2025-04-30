@@ -2,25 +2,25 @@ package org.clevercastle.authforge.repository;
 
 import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.tuple.Pair;
-import org.clevercastle.authforge.exception.CastleException;
 import org.clevercastle.authforge.entity.User;
 import org.clevercastle.authforge.entity.UserLoginItem;
 import org.clevercastle.authforge.entity.UserRefreshTokenMapping;
+import org.clevercastle.authforge.exception.CastleException;
 
 import java.time.OffsetDateTime;
 
 public interface UserRepository {
-    void save(User user, UserLoginItem userLoginItem);
+    void save(User user, UserLoginItem userLoginItem) throws CastleException;
 
     @Nonnull
-    Pair<User, UserLoginItem> getByLoginIdentifier(String loginIdentifier);
+    Pair<User, UserLoginItem> getByLoginIdentifier(String loginIdentifier) throws CastleException;
 
     @Nonnull
-    Pair<User, UserLoginItem> getByUserSub(String userSUb);
+    Pair<User, UserLoginItem> getByUserSub(String userSUb) throws CastleException;
 
-    void confirmLoginItem(String loginIdentifier);
+    void confirmLoginItem(String loginIdentifier) throws CastleException;
 
-    UserRefreshTokenMapping addRefreshToken(User user, String refreshToken, OffsetDateTime expiredAt);
+    UserRefreshTokenMapping addRefreshToken(User user, String refreshToken, OffsetDateTime expiredAt) throws CastleException;
 
     boolean verifyRefreshToken(User user, String refreshToken) throws CastleException;
 }
