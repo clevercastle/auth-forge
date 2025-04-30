@@ -5,6 +5,8 @@ import org.clevercastle.authforge.Config;
 import org.clevercastle.authforge.UserService;
 import org.clevercastle.authforge.UserServiceImpl;
 import org.clevercastle.authforge.repository.UserRepository;
+import org.clevercastle.authforge.repository.dynamodb.DynamodbUser;
+import org.clevercastle.authforge.repository.dynamodb.DynamodbUserRepositoryImpl;
 import org.clevercastle.authforge.repository.rdsjpa.RdsJpaUserLoginItemRepository;
 import org.clevercastle.authforge.repository.rdsjpa.RdsJpaUserModelRepository;
 import org.clevercastle.authforge.repository.rdsjpa.RdsJpaUserRefreshTokenMappingRepository;
@@ -16,6 +18,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -37,6 +41,23 @@ public class Beans {
         return new RdsJpaUserRepositoryImpl(userModelRepository, userLoginItemRepository, userRefreshTokenMappingRepository);
     }
 
+
+    @Bean
+    public UserRepository dynamodbUserRepository(DynamoDbEnhancedClient dynamodbEnhancedClient, DynamoDbClient dynamodbClient) {
+        return new DynamodbUserRepositoryImpl(dynamodbEnhancedClient, dynamodbClient);
+    }
+
+    @Bean
+    public DynamoDbClient dynamoDbClient() {
+        return DynamoDbClient.builder().build();
+    }
+
+    @Bean
+    public DynamoDbEnhancedClient dynamoDbEnhancedClient(DynamoDbClient dynamoDbClient) {
+        return DynamoDbEnhancedClient.builder().dynamoDbClient(dynamoDbClient).build();
+    }
+
+
     @Bean
     public TokenService tokenService() throws NoSuchAlgorithmException, InvalidKeySpecException {
         String privateKeyBase64 = "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQg9dIFmLwqXyr9fLX8XYOL5tiS63YJP0NGo9+7wqm3gdahRANCAATcI/NjILO7b1x7CQwHkB2+CGsrIKqI94fh8aEtaWTIzGYn1vct9u2/AvORtn6qBpi4/rJH4XxFekFigifbXors";
@@ -56,8 +77,8 @@ public class Beans {
     }
 
     @Bean
-    public UserService userService(UserRepository userRepository, TokenService tokenService) {
-        return new UserServiceImpl(Config.builder().build(), userRepository, tokenService, new DummyVerificationService(userRepository));
+    public UserService userService(UserRepository dynamodbUserRepository, TokenService tokenService) {
+        return new UserServiceImpl(Config.builder().build(), dynamodbUserRepository, tokenService, new DummyVerificationService(dynamodbUserRepository));
     }
 
 

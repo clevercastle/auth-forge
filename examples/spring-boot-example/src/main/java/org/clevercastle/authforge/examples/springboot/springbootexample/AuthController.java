@@ -111,7 +111,6 @@ public class AuthController {
         if (StringUtils.isBlank(userSub)) {
             throw new CastleException("<UNK>");
         }
-        userService.getByLoginIdentifier(userSub);
         Pair<User, UserLoginItem> pair = userService.getByUserSub(userSub);
         if (pair.getLeft() == null || pair.getRight() == null) {
             throw new CastleException("<UNK>");
