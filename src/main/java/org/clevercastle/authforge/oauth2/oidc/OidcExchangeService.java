@@ -6,7 +6,7 @@ import com.nimbusds.oauth2.sdk.TokenErrorResponse;
 import com.nimbusds.oauth2.sdk.TokenResponse;
 import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.openid.connect.sdk.OIDCTokenResponse;
-import org.clevercastle.authforge.CastleException;
+import org.clevercastle.authforge.exception.CastleException;
 import org.clevercastle.authforge.oauth2.AbstractOauth2ExchangeService;
 import org.clevercastle.authforge.oauth2.Oauth2ClientConfig;
 import org.clevercastle.authforge.oauth2.Oauth2User;

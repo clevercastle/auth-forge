@@ -1,10 +1,11 @@
-package org.clevercastle.authforge;
+package org.clevercastle.authforge.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import org.clevercastle.authforge.UserState;
 
 import java.time.OffsetDateTime;
 

@@ -1,8 +1,8 @@
 package org.clevercastle.authforge.repository.rdsjpa;
 
-import org.clevercastle.authforge.User;
+import org.clevercastle.authforge.entity.User;
 
-public interface IUserModelRepository {
+public interface RdsJpaUserModelRepository {
     User save(User user);
 
     User getByUserId(String userId);

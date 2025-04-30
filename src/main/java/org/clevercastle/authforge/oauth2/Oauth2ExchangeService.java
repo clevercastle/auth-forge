@@ -1,6 +1,6 @@
 package org.clevercastle.authforge.oauth2;
 
-import org.clevercastle.authforge.CastleException;
+import org.clevercastle.authforge.exception.CastleException;
 
 public interface Oauth2ExchangeService {
 

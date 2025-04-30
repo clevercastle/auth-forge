@@ -2,14 +2,14 @@ package org.clevercastle.authforge.repository.rdsjpa;
 
 import java.io.Serializable;
 
-public class UserRefreshTokenMappingId implements Serializable {
+public class RdsJpaUserRefreshTokenMappingId implements Serializable {
     private String userId;
     private String refreshToken;
 
-    public UserRefreshTokenMappingId() {
+    public RdsJpaUserRefreshTokenMappingId() {
     }
 
-    public UserRefreshTokenMappingId(String userId, String refreshToken) {
+    public RdsJpaUserRefreshTokenMappingId(String userId, String refreshToken) {
         this.userId = userId;
         this.refreshToken = refreshToken;
     }

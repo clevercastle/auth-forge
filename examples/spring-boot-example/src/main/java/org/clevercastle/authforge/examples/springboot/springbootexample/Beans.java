@@ -5,10 +5,10 @@ import org.clevercastle.authforge.Config;
 import org.clevercastle.authforge.UserService;
 import org.clevercastle.authforge.UserServiceImpl;
 import org.clevercastle.authforge.repository.UserRepository;
-import org.clevercastle.authforge.repository.rdsjpa.IUserLoginItemRepository;
-import org.clevercastle.authforge.repository.rdsjpa.IUserModelRepository;
-import org.clevercastle.authforge.repository.rdsjpa.IUserRefreshTokenMappingRepository;
-import org.clevercastle.authforge.repository.rdsjpa.UserRepositoryImpl;
+import org.clevercastle.authforge.repository.rdsjpa.RdsJpaUserLoginItemRepository;
+import org.clevercastle.authforge.repository.rdsjpa.RdsJpaUserModelRepository;
+import org.clevercastle.authforge.repository.rdsjpa.RdsJpaUserRefreshTokenMappingRepository;
+import org.clevercastle.authforge.repository.rdsjpa.RdsJpaUserRepositoryImpl;
 import org.clevercastle.authforge.token.TokenService;
 import org.clevercastle.authforge.token.jwt.JwtTokenService;
 import org.clevercastle.authforge.verification.DummyVerificationService;
@@ -31,10 +31,10 @@ import java.util.Base64;
 @Configuration
 public class Beans {
     @Bean
-    public UserRepository userRepository(IUserModelRepository userModelRepository,
-                                         IUserLoginItemRepository userLoginItemRepository,
-                                         IUserRefreshTokenMappingRepository userRefreshTokenMappingRepository) {
-        return new UserRepositoryImpl(userModelRepository, userLoginItemRepository, userRefreshTokenMappingRepository);
+    public UserRepository userRepository(RdsJpaUserModelRepository userModelRepository,
+                                         RdsJpaUserLoginItemRepository userLoginItemRepository,
+                                         RdsJpaUserRefreshTokenMappingRepository userRefreshTokenMappingRepository) {
+        return new RdsJpaUserRepositoryImpl(userModelRepository, userLoginItemRepository, userRefreshTokenMappingRepository);
     }
 
     @Bean
@@ -56,8 +56,8 @@ public class Beans {
     }
 
     @Bean
-    public UserService userService(UserRepository userRepository, IUserLoginItemRepository userLoginItemRepository, TokenService tokenService) {
-        return new UserServiceImpl(Config.builder().build(), userRepository, tokenService, new DummyVerificationService(userLoginItemRepository));
+    public UserService userService(UserRepository userRepository, TokenService tokenService) {
+        return new UserServiceImpl(Config.builder().build(), userRepository, tokenService, new DummyVerificationService(userRepository));
     }
 
 

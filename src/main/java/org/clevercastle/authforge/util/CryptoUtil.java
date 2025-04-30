@@ -1,6 +1,6 @@
 package org.clevercastle.authforge.util;
 
-import org.clevercastle.authforge.CastleException;
+import org.clevercastle.authforge.exception.CastleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

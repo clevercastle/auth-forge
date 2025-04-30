@@ -1,6 +1,6 @@
 package org.clevercastle.authforge.verification;
 
-import org.clevercastle.authforge.CastleException;
+import org.clevercastle.authforge.exception.CastleException;
 
 public interface VerificationService {
     void sendVerificationCode(String loginIdentifier, String verificationCode) throws CastleException;

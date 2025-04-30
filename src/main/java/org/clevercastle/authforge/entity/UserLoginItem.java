@@ -1,4 +1,4 @@
-package org.clevercastle.authforge;
+package org.clevercastle.authforge.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

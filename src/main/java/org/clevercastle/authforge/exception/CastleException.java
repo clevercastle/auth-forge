@@ -1,4 +1,4 @@
-package org.clevercastle.authforge;
+package org.clevercastle.authforge.exception;
 
 public class CastleException extends Exception {
     public CastleException() {

@@ -3,23 +3,23 @@ package org.clevercastle.authforge.repository.rdsjpa;
 import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.clevercastle.authforge.CastleException;
-import org.clevercastle.authforge.User;
-import org.clevercastle.authforge.UserLoginItem;
-import org.clevercastle.authforge.UserRefreshTokenMapping;
+import org.clevercastle.authforge.exception.CastleException;
+import org.clevercastle.authforge.entity.User;
+import org.clevercastle.authforge.entity.UserLoginItem;
+import org.clevercastle.authforge.entity.UserRefreshTokenMapping;
 import org.clevercastle.authforge.repository.UserRepository;
 import org.clevercastle.authforge.util.TimeUtils;
 
 import java.time.OffsetDateTime;
 
-public class UserRepositoryImpl implements UserRepository {
-    private final IUserModelRepository userModelRepository;
-    private final IUserLoginItemRepository userLoginItemRepository;
-    private final IUserRefreshTokenMappingRepository userRefreshTokenMappingRepository;
+public class RdsJpaUserRepositoryImpl implements UserRepository {
+    private final RdsJpaUserModelRepository userModelRepository;
+    private final RdsJpaUserLoginItemRepository userLoginItemRepository;
+    private final RdsJpaUserRefreshTokenMappingRepository userRefreshTokenMappingRepository;
 
-    public UserRepositoryImpl(IUserModelRepository userModelRepository,
-                              IUserLoginItemRepository userLoginItemRepository,
-                              IUserRefreshTokenMappingRepository userRefreshTokenMappingRepository) {
+    public RdsJpaUserRepositoryImpl(RdsJpaUserModelRepository userModelRepository,
+                                    RdsJpaUserLoginItemRepository userLoginItemRepository,
+                                    RdsJpaUserRefreshTokenMappingRepository userRefreshTokenMappingRepository) {
         this.userModelRepository = userModelRepository;
         this.userLoginItemRepository = userLoginItemRepository;
         this.userRefreshTokenMappingRepository = userRefreshTokenMappingRepository;
@@ -31,16 +31,7 @@ public class UserRepositoryImpl implements UserRepository {
         userLoginItemRepository.save(userLoginItem);
     }
 
-    @Override
-    public void save(User user) {
-        userModelRepository.save(user);
-    }
-
-    @Override
-    public void saveLoginItem(UserLoginItem loginItem) {
-        userLoginItemRepository.save(loginItem);
-    }
-
+    @Nonnull
     @Override
     public Pair<User, UserLoginItem> getByLoginIdentifier(String loginIdentifier) {
         UserLoginItem userLoginItem = userLoginItemRepository.getByLoginIdentifier(loginIdentifier);
@@ -83,6 +74,7 @@ public class UserRepositoryImpl implements UserRepository {
         return false;
     }
 
+    @Nonnull
     @Override
     public Pair<User, UserLoginItem> getByUserSub(String userSub) {
         UserLoginItem userLoginItem = userLoginItemRepository.getByUserSub(userSub);
