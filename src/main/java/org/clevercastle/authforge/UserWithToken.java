@@ -1,6 +1,6 @@
 package org.clevercastle.authforge;
 
-import org.clevercastle.authforge.entity.User;
+import org.clevercastle.authforge.model.User;
 
 public class UserWithToken {
     private final User user;
