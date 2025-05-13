@@ -4,7 +4,9 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.clevercastle.authforge.dto.OneTimePasswordDto;
 import org.clevercastle.authforge.exception.CastleException;
+import org.clevercastle.authforge.model.OneTimePassword;
 import org.clevercastle.authforge.model.User;
 import org.clevercastle.authforge.model.UserLoginItem;
 import org.clevercastle.authforge.UserRegisterRequest;
@@ -86,8 +88,8 @@ public class AuthController {
 
 
     @GetMapping("auth/verify")
-    public UserWithToken verify(@RequestParam String loginIdentifier, @RequestParam String verificationCode) throws CastleException {
-        userService.verify("email#" + loginIdentifier, verificationCode);
+    public UserWithToken verify(@RequestParam String email, @RequestParam String verificationCode) throws CastleException {
+        userService.verify("email#" + email, verificationCode);
         return null;
     }
 
@@ -140,5 +142,15 @@ public class AuthController {
                 return userService.exchange(githubClientConfig, code, state, redirectUrl);
         }
         return null;
+    }
+
+    @GetMapping("auth/one-time-password")
+    public OneTimePasswordDto requestOneTimePassword(@RequestParam String email) throws CastleException {
+        return userService.requestOneTimePassword("email#" + email);
+    }
+
+    @PostMapping("auth/one-time-password")
+    public UserWithToken verifyOneTimePassword(@RequestBody VerifyOneTimeRequest request) throws CastleException {
+        return userService.verifyOneTimePassword("email#" + request.getEmail(), request.getOneTimePassword());
     }
 }
