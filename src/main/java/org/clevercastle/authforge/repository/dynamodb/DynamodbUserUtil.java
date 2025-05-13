@@ -1,8 +1,8 @@
 package org.clevercastle.authforge.repository.dynamodb;
 
-import org.clevercastle.authforge.entity.User;
-import org.clevercastle.authforge.entity.UserLoginItem;
-import org.clevercastle.authforge.entity.UserRefreshTokenMapping;
+import org.clevercastle.authforge.model.User;
+import org.clevercastle.authforge.model.UserLoginItem;
+import org.clevercastle.authforge.model.UserRefreshTokenMapping;
 
 public class DynamodbUserUtil {
 
