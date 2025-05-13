@@ -6,23 +6,28 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.clevercastle.authforge.exception.CastleException;
 import org.clevercastle.authforge.model.User;
 import org.clevercastle.authforge.model.UserLoginItem;
+import org.clevercastle.authforge.model.OneTimePassword;
 import org.clevercastle.authforge.model.UserRefreshTokenMapping;
 import org.clevercastle.authforge.repository.UserRepository;
 import org.clevercastle.authforge.util.TimeUtils;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 public class RdsJpaUserRepositoryImpl implements UserRepository {
     private final RdsJpaUserModelRepository userModelRepository;
     private final RdsJpaUserLoginItemRepository userLoginItemRepository;
     private final RdsJpaUserRefreshTokenMappingRepository userRefreshTokenMappingRepository;
+    private final RdsJpaOneTimePasswordRepository oneTimePasswordRepository;
 
     public RdsJpaUserRepositoryImpl(RdsJpaUserModelRepository userModelRepository,
                                     RdsJpaUserLoginItemRepository userLoginItemRepository,
-                                    RdsJpaUserRefreshTokenMappingRepository userRefreshTokenMappingRepository) {
+                                    RdsJpaUserRefreshTokenMappingRepository userRefreshTokenMappingRepository,
+                                    RdsJpaOneTimePasswordRepository oneTimePasswordRepository) {
         this.userModelRepository = userModelRepository;
         this.userLoginItemRepository = userLoginItemRepository;
         this.userRefreshTokenMappingRepository = userRefreshTokenMappingRepository;
+        this.oneTimePasswordRepository = oneTimePasswordRepository;
     }
 
     @Override
@@ -82,5 +87,24 @@ public class RdsJpaUserRepositoryImpl implements UserRepository {
             return Pair.of(userModelRepository.getByUserId(userLoginItem.getUserId()), userLoginItem);
         }
         return Pair.of(null, null);
+    }
+
+    @Override
+    public void saveOneTimePassword(OneTimePassword oneTimePassword) throws CastleException {
+        oneTimePasswordRepository.deleteByLoginIdentifier(oneTimePassword.getLoginIdentifier());
+        oneTimePasswordRepository.save(oneTimePassword);
+    }
+
+    @Override
+    public boolean verifyOneTimePassword(String loginIdentifier, String oneTimePassword) throws CastleException {
+        // the result's size should be one
+        List<OneTimePassword> oneTimePasswords = oneTimePasswordRepository.getByLoginIdentifier(loginIdentifier);
+        for (OneTimePassword otp : oneTimePasswords) {
+            if (StringUtils.equals(otp.getOneTimePassword(), oneTimePassword)) {
+                oneTimePasswordRepository.deleteByLoginIdentifier(loginIdentifier);
+                return true;
+            }
+        }
+        return false;
     }
 }

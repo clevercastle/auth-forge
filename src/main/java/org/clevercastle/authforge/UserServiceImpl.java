@@ -14,9 +14,11 @@ import com.nimbusds.openid.connect.sdk.OIDCTokenResponse;
 import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.clevercastle.authforge.dto.OneTimePasswordDto;
 import org.clevercastle.authforge.exception.CastleException;
 import org.clevercastle.authforge.exception.UserExistException;
 import org.clevercastle.authforge.exception.UserNotFoundException;
+import org.clevercastle.authforge.model.OneTimePassword;
 import org.clevercastle.authforge.model.User;
 import org.clevercastle.authforge.model.UserLoginItem;
 import org.clevercastle.authforge.oauth2.Oauth2ClientConfig;
@@ -27,7 +29,7 @@ import org.clevercastle.authforge.util.CodeUtil;
 import org.clevercastle.authforge.util.HashUtil;
 import org.clevercastle.authforge.util.IdUtil;
 import org.clevercastle.authforge.util.TimeUtils;
-import org.clevercastle.authforge.verification.VerificationService;
+import org.clevercastle.authforge.code.CodeSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,16 +46,16 @@ public class UserServiceImpl implements UserService {
     private final Config config;
     private final UserRepository userRepository;
     private final TokenService tokenService;
-    private final VerificationService verificationService;
+    private final CodeSender codeSender;
 
     public UserServiceImpl(Config config,
                            UserRepository userRepository,
                            TokenService tokenService,
-                           VerificationService verificationService) {
+                           CodeSender codeSender) {
         this.config = config;
         this.userRepository = userRepository;
         this.tokenService = tokenService;
-        this.verificationService = verificationService;
+        this.codeSender = codeSender;
     }
 
     @Override
@@ -90,7 +92,7 @@ public class UserServiceImpl implements UserService {
         userLoginItem.setCreatedAt(now);
         userLoginItem.setUpdatedAt(now);
         this.userRepository.save(user, userLoginItem);
-        this.verificationService.sendVerificationCode(userLoginItem.getLoginIdentifier(), userLoginItem.getVerificationCode());
+        this.codeSender.sendVerificationCode(userLoginItem.getLoginIdentifier(), userLoginItem.getVerificationCode());
         return user;
     }
 
@@ -108,7 +110,18 @@ public class UserServiceImpl implements UserService {
         if (!StringUtils.equals(verificationCode, userLoginItem.getVerificationCode())) {
             throw new CastleException();
         }
-        this.verificationService.verify(loginIdentifier, verificationCode);
+        if (StringUtils.isBlank(verificationCode)) {
+            throw new CastleException();
+        }
+        if (StringUtils.isBlank(userLoginItem.getVerificationCode()) || userLoginItem.getVerificationCodeExpiredAt() == null) {
+            throw new CastleException();
+        }
+        if (userLoginItem.getVerificationCodeExpiredAt().isBefore(TimeUtils.now())) {
+            throw new CastleException();
+        }
+        if (verificationCode.equals(userLoginItem.getVerificationCode())) {
+            userRepository.confirmLoginItem(loginIdentifier);
+        }
     }
 
     @Override
@@ -273,5 +286,54 @@ public class UserServiceImpl implements UserService {
     @Override
     public Pair<User, UserLoginItem> getByUserSub(String userSub) throws CastleException {
         return userRepository.getByUserSub(userSub);
+    }
+
+    @Transactional
+    @Override
+    public OneTimePasswordDto requestOneTimePassword(String loginIdentifier) throws CastleException {
+        Pair<User, UserLoginItem> pair = getByLoginIdentifier(loginIdentifier);
+        if (pair.getLeft() == null || pair.getRight() == null) {
+            throw new UserNotFoundException();
+        }
+        if (UserLoginItem.State.ACTIVE != pair.getRight().getState()) {
+            throw new CastleException("Current login is not confirmed");
+        }
+        if (UserState.ACTIVE != pair.getLeft().getUserState()) {
+            throw new CastleException("The user is not confirmed");
+        }
+        OneTimePassword oneTimePassword = new OneTimePassword();
+        oneTimePassword.setLoginIdentifier(loginIdentifier);
+        oneTimePassword.setOneTimePassword(CodeUtil.generateCode(6, CodeUtil.UPPER_CHARS));
+        oneTimePassword.setExpiredAt(TimeUtils.now().plusSeconds(config.getOneTimePasswordExpireTime()));
+        oneTimePassword.setCreatedAt(TimeUtils.now());
+        userRepository.saveOneTimePassword(oneTimePassword);
+        this.codeSender.sendOneTimePassword(loginIdentifier, oneTimePassword.getOneTimePassword());
+        OneTimePasswordDto oneTimePasswordDto = new OneTimePasswordDto();
+        oneTimePasswordDto.setLoginIdentifier(loginIdentifier);
+        oneTimePasswordDto.setExpiredAt(oneTimePassword.getExpiredAt());
+        oneTimePasswordDto.setCreatedAt(oneTimePassword.getCreatedAt());
+        return oneTimePasswordDto;
+    }
+
+    @Transactional
+    @Override
+    public UserWithToken verifyOneTimePassword(String loginIdentifier, String oneTimePassword) throws CastleException {
+        boolean success = userRepository.verifyOneTimePassword(loginIdentifier, oneTimePassword);
+        if (!success) {
+            throw new CastleException();
+        }
+        Pair<User, UserLoginItem> pair = getByLoginIdentifier(loginIdentifier);
+        if (pair.getLeft() == null || pair.getRight() == null) {
+            throw new UserNotFoundException();
+        }
+        if (UserLoginItem.State.ACTIVE != pair.getRight().getState()) {
+            throw new CastleException("Current login is not confirmed");
+        }
+        if (UserState.ACTIVE != pair.getLeft().getUserState()) {
+            throw new CastleException("The user is not confirmed");
+        }
+        TokenHolder tokenHolder = tokenService.generateToken(pair.getLeft(), pair.getRight());
+        userRepository.addRefreshToken(pair.getLeft(), tokenHolder.getRefreshToken(), tokenHolder.getExpiresAt());
+        return new UserWithToken(pair.getLeft(), tokenHolder);
     }
 }
