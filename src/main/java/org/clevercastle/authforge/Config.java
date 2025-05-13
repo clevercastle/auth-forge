@@ -1,10 +1,12 @@
 package org.clevercastle.authforge;
 
 public class Config {
-    // in seconds
+    // in second
     private int verificationCodeExpireTime;
-    // in seconds
+    // in second
     private int tokenExpireTime;
+    // in second
+    private int oneTimePasswordExpireTime;
 
     public int getVerificationCodeExpireTime() {
         return verificationCodeExpireTime;
@@ -14,20 +16,20 @@ public class Config {
         return tokenExpireTime;
     }
 
+    public int getOneTimePasswordExpireTime() {
+        return oneTimePasswordExpireTime;
+    }
 
     public static ConfigBuilder builder() {
         return new ConfigBuilder();
     }
 
     public static final class ConfigBuilder {
-        private int verificationCodeExpireTime = 300;
-        private int tokenExpireTime = 28400;
+        private int verificationCodeExpireTime;
+        private int tokenExpireTime;
+        private int oneTimePasswordExpireTime;
 
         private ConfigBuilder() {
-        }
-
-        public static ConfigBuilder aConfig() {
-            return new ConfigBuilder();
         }
 
         public ConfigBuilder verificationCodeExpireTime(int verificationCodeExpireTime) {
@@ -40,10 +42,16 @@ public class Config {
             return this;
         }
 
+        public ConfigBuilder oneTimePasswordExpireTime(int oneTimePasswordExpireTime) {
+            this.oneTimePasswordExpireTime = oneTimePasswordExpireTime;
+            return this;
+        }
+
         public Config build() {
             Config config = new Config();
-            config.verificationCodeExpireTime = this.verificationCodeExpireTime;
             config.tokenExpireTime = this.tokenExpireTime;
+            config.oneTimePasswordExpireTime = this.oneTimePasswordExpireTime;
+            config.verificationCodeExpireTime = this.verificationCodeExpireTime;
             return config;
         }
     }
