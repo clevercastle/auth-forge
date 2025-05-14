@@ -1,12 +1,15 @@
 package org.clevercastle.authforge.examples.springboot.springbootexample;
 
 import com.auth0.jwt.algorithms.Algorithm;
+import org.clevercastle.authforge.DummyCacheServiceImpl;
 import org.clevercastle.authforge.Config;
 import org.clevercastle.authforge.UserService;
 import org.clevercastle.authforge.UserServiceImpl;
 import org.clevercastle.authforge.repository.UserRepository;
 import org.clevercastle.authforge.repository.dynamodb.DynamodbUserRepositoryImpl;
+import org.clevercastle.authforge.repository.rdsjpa.RdsJpaChallengeSessionRepository;
 import org.clevercastle.authforge.repository.rdsjpa.RdsJpaOneTimePasswordRepository;
+import org.clevercastle.authforge.repository.rdsjpa.RdsJpaUserHmacSecretRepository;
 import org.clevercastle.authforge.repository.rdsjpa.RdsJpaUserLoginItemRepository;
 import org.clevercastle.authforge.repository.rdsjpa.RdsJpaUserModelRepository;
 import org.clevercastle.authforge.repository.rdsjpa.RdsJpaUserRefreshTokenMappingRepository;
@@ -38,9 +41,11 @@ public class Beans {
     public UserRepository userRepository(RdsJpaUserModelRepository userModelRepository,
                                          RdsJpaUserLoginItemRepository userLoginItemRepository,
                                          RdsJpaUserRefreshTokenMappingRepository userRefreshTokenMappingRepository,
-                                         RdsJpaOneTimePasswordRepository oneTimePasswordRepository) {
+                                         RdsJpaOneTimePasswordRepository oneTimePasswordRepository,
+                                         RdsJpaChallengeSessionRepository challengeSessionRepository,
+                                         RdsJpaUserHmacSecretRepository userHmacSecretRepository) {
         return new RdsJpaUserRepositoryImpl(userModelRepository, userLoginItemRepository,
-                userRefreshTokenMappingRepository, oneTimePasswordRepository);
+                userRefreshTokenMappingRepository, oneTimePasswordRepository, challengeSessionRepository, userHmacSecretRepository);
     }
 
 
@@ -80,7 +85,7 @@ public class Beans {
 
     @Bean
     public UserService userService(UserRepository userRepository, TokenService tokenService) {
-        return new UserServiceImpl(Config.builder().build(), userRepository, tokenService, new DummyCodeSender());
+        return new UserServiceImpl(Config.builder().build(), userRepository, tokenService, new DummyCodeSender(), new DummyCacheServiceImpl());
     }
 
 
