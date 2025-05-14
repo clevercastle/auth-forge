@@ -35,26 +35,26 @@ This system is designed to be scalable, secure, and easily integrable with exist
 
 - [ ] PostgreSQL (In progress)
 - [ ] MySQL
-- [ ] DynamoEDB
+- [ ] DynamoEDB (In progress)
 - [ ] MongoDB
 
 ### Authentication provider
 
-- [ ] Email + password (Basic Authentication) (in progress)
+- [x] Email + password (Basic Authentication)
 - [ ] Email + password (pbkdf2)
-- [ ] Email + one time password
+- [x] Email + one time password
 - [ ] Email + Passkey
 - [ ] Api key
-- [ ] Multi-Factor authentication
+- [ ] Multi-Factor authentication (In progress)
 
 ### SSO provider
 
-- [ ] Google (in progress)
-- [ ] GitHub (in progress)
+- [x] Google
+- [x] GitHub
 - [ ] Apple
 - [ ] Microsoft
 - [ ] Okta
-- [ ] OAuth2 (in progress)
+- [x] OIDC
 
 ### Infra
 
