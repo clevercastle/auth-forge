@@ -5,10 +5,8 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.clevercastle.authforge.exception.CastleException;
-import org.clevercastle.authforge.model.ChallengeSession;
 import org.clevercastle.authforge.model.OneTimePassword;
 import org.clevercastle.authforge.model.User;
-import org.clevercastle.authforge.model.UserHmacSecret;
 import org.clevercastle.authforge.model.UserLoginItem;
 import org.clevercastle.authforge.model.UserRefreshTokenMapping;
 import org.clevercastle.authforge.repository.UserRepository;
@@ -176,20 +174,5 @@ public class DynamodbUserRepositoryImpl implements UserRepository {
     @Override
     public boolean verifyOneTimePassword(String loginIdentifier, String oneTimePassword) throws CastleException {
         throw new NotImplementedException();
-    }
-
-    @Override
-    public void createHmacSecret(UserHmacSecret userHmacSecret) throws CastleException {
-
-    }
-
-    @Override
-    public List<UserHmacSecret> listHmacSecretByUserId(String userId) throws CastleException {
-        return List.of();
-    }
-
-    @Override
-    public void createChallenge(ChallengeSession session) throws CastleException {
-
     }
 }

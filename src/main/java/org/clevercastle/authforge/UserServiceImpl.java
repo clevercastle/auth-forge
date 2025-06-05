@@ -14,27 +14,22 @@ import com.nimbusds.openid.connect.sdk.OIDCTokenResponse;
 import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.clevercastle.authforge.code.CodeSender;
 import org.clevercastle.authforge.dto.OneTimePasswordDto;
 import org.clevercastle.authforge.exception.CastleException;
 import org.clevercastle.authforge.exception.UserExistException;
 import org.clevercastle.authforge.exception.UserNotFoundException;
-import org.clevercastle.authforge.model.ChallengeSession;
 import org.clevercastle.authforge.model.OneTimePassword;
-import org.clevercastle.authforge.model.ResourceType;
 import org.clevercastle.authforge.model.User;
-import org.clevercastle.authforge.model.UserHmacSecret;
 import org.clevercastle.authforge.model.UserLoginItem;
 import org.clevercastle.authforge.oauth2.Oauth2ClientConfig;
 import org.clevercastle.authforge.oauth2.Oauth2User;
 import org.clevercastle.authforge.repository.UserRepository;
 import org.clevercastle.authforge.token.TokenService;
-import org.clevercastle.authforge.totp.RequestTotpResponse;
-import org.clevercastle.authforge.totp.SetupTotpRequest;
 import org.clevercastle.authforge.util.CodeUtil;
 import org.clevercastle.authforge.util.HashUtil;
 import org.clevercastle.authforge.util.IdUtil;
 import org.clevercastle.authforge.util.TimeUtils;
+import org.clevercastle.authforge.code.CodeSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,18 +47,15 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final TokenService tokenService;
     private final CodeSender codeSender;
-    private final CacheService cacheService;
 
     public UserServiceImpl(Config config,
                            UserRepository userRepository,
                            TokenService tokenService,
-                           CodeSender codeSender,
-                           CacheService cacheService) {
+                           CodeSender codeSender) {
         this.config = config;
         this.userRepository = userRepository;
         this.tokenService = tokenService;
         this.codeSender = codeSender;
-        this.cacheService = cacheService;
     }
 
     @Override
@@ -343,45 +335,5 @@ public class UserServiceImpl implements UserService {
         TokenHolder tokenHolder = tokenService.generateToken(pair.getLeft(), pair.getRight());
         userRepository.addRefreshToken(pair.getLeft(), tokenHolder.getRefreshToken(), tokenHolder.getExpiresAt());
         return new UserWithToken(pair.getLeft(), tokenHolder);
-    }
-
-    @Override
-    public ChallengeSession createChallenge(String userId, ChallengeSession.Type type) {
-        ChallengeSession.Type sessionType = null;
-        ChallengeSession session = new ChallengeSession();
-        session.setId(IdUtil.genId(ResourceType.challengeSession));
-        session.setType(type);
-        session.setUserId(userId);
-        session.setCreatedAt(TimeUtils.now());
-        return session;
-    }
-
-    @Override
-    public RequestTotpResponse requestTotp(User user) throws CastleException {
-        String key = UUID.randomUUID().toString();
-        String secret = UUID.randomUUID().toString();
-        cacheService.set(key, secret, 120);
-        RequestTotpResponse requestTotpDto = new RequestTotpResponse();
-        requestTotpDto.setSessionId(key);
-        requestTotpDto.setSecret(secret);
-        return requestTotpDto;
-    }
-
-    @Override
-    public void setupTotp(User user, SetupTotpRequest request) throws CastleException {
-        String secret = cacheService.get(request.getSessionId());
-        if (StringUtils.isBlank(secret)) {
-            throw new CastleException();
-        }
-        // todo verify the user input verification code
-        UserHmacSecret userHmacSecret = new UserHmacSecret();
-        userHmacSecret.setUserId(user.getUserId());
-        userHmacSecret.setId(IdUtil.genId(ResourceType.totp));
-        userHmacSecret.setSecret(secret);
-        var now = TimeUtils.now();
-        userHmacSecret.setCreatedAt(now);
-        userHmacSecret.setLastUsedAt(now);
-        userHmacSecret.setName(request.getName());
-        userRepository.createHmacSecret(userHmacSecret);
     }
 }

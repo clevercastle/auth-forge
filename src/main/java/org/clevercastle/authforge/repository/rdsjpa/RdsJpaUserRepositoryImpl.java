@@ -4,9 +4,7 @@ import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.clevercastle.authforge.exception.CastleException;
-import org.clevercastle.authforge.model.ChallengeSession;
 import org.clevercastle.authforge.model.User;
-import org.clevercastle.authforge.model.UserHmacSecret;
 import org.clevercastle.authforge.model.UserLoginItem;
 import org.clevercastle.authforge.model.OneTimePassword;
 import org.clevercastle.authforge.model.UserRefreshTokenMapping;
@@ -21,21 +19,15 @@ public class RdsJpaUserRepositoryImpl implements UserRepository {
     private final RdsJpaUserLoginItemRepository userLoginItemRepository;
     private final RdsJpaUserRefreshTokenMappingRepository userRefreshTokenMappingRepository;
     private final RdsJpaOneTimePasswordRepository oneTimePasswordRepository;
-    private final RdsJpaChallengeSessionRepository challengeSessionRepository;
-    private final RdsJpaUserHmacSecretRepository userHmacSecretRepository;
 
     public RdsJpaUserRepositoryImpl(RdsJpaUserModelRepository userModelRepository,
                                     RdsJpaUserLoginItemRepository userLoginItemRepository,
                                     RdsJpaUserRefreshTokenMappingRepository userRefreshTokenMappingRepository,
-                                    RdsJpaOneTimePasswordRepository oneTimePasswordRepository,
-                                    RdsJpaChallengeSessionRepository challengeSessionRepository,
-                                    RdsJpaUserHmacSecretRepository userHmacSecretRepository) {
+                                    RdsJpaOneTimePasswordRepository oneTimePasswordRepository) {
         this.userModelRepository = userModelRepository;
         this.userLoginItemRepository = userLoginItemRepository;
         this.userRefreshTokenMappingRepository = userRefreshTokenMappingRepository;
         this.oneTimePasswordRepository = oneTimePasswordRepository;
-        this.challengeSessionRepository = challengeSessionRepository;
-        this.userHmacSecretRepository = userHmacSecretRepository;
     }
 
     @Override
@@ -114,20 +106,5 @@ public class RdsJpaUserRepositoryImpl implements UserRepository {
             }
         }
         return false;
-    }
-
-    @Override
-    public void createHmacSecret(UserHmacSecret userHmacSecret) throws CastleException {
-        this.userHmacSecretRepository.save(userHmacSecret);
-    }
-
-    @Override
-    public List<UserHmacSecret> listHmacSecretByUserId(String userId) throws CastleException {
-        return this.userHmacSecretRepository.getByUserId(userId);
-    }
-
-    @Override
-    public void createChallenge(ChallengeSession session) throws CastleException {
-        this.challengeSessionRepository.save(session);
     }
 }
