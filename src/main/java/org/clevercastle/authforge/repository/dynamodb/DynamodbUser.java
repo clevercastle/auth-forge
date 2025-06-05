@@ -1,7 +1,7 @@
 package org.clevercastle.authforge.repository.dynamodb;
 
 import org.clevercastle.authforge.UserState;
-import org.clevercastle.authforge.model.UserLoginItem;
+import org.clevercastle.authforge.entity.UserLoginItem;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecondaryPartitionKey;
@@ -28,8 +28,6 @@ public class DynamodbUser {
     // for user refresh token: pk = userId, sk="refreshToken#"+ refreshToken
     private String pk;
     private String sk;
-
-    private Type type;
 
     // region from user table
     private UserState userState;
@@ -69,14 +67,6 @@ public class DynamodbUser {
 
     public void setSk(String sk) {
         this.sk = sk;
-    }
-
-    public Type getType() {
-        return type;
-    }
-
-    public void setType(Type type) {
-        this.type = type;
     }
 
     public UserState getUserState() {

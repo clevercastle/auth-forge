@@ -1,6 +1,6 @@
 package org.clevercastle.authforge.repository.rdsjpa;
 
-import org.clevercastle.authforge.model.UserLoginItem;
+import org.clevercastle.authforge.entity.UserLoginItem;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 

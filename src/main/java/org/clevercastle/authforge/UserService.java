@@ -1,8 +1,8 @@
 package org.clevercastle.authforge;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.clevercastle.authforge.model.User;
-import org.clevercastle.authforge.model.UserLoginItem;
+import org.clevercastle.authforge.entity.User;
+import org.clevercastle.authforge.entity.UserLoginItem;
 import org.clevercastle.authforge.exception.CastleException;
 import org.clevercastle.authforge.oauth2.Oauth2ClientConfig;
 
