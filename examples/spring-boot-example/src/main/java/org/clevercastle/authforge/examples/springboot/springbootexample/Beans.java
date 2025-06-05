@@ -5,15 +5,15 @@ import org.clevercastle.authforge.Config;
 import org.clevercastle.authforge.UserService;
 import org.clevercastle.authforge.UserServiceImpl;
 import org.clevercastle.authforge.repository.UserRepository;
+import org.clevercastle.authforge.repository.dynamodb.DynamodbUser;
 import org.clevercastle.authforge.repository.dynamodb.DynamodbUserRepositoryImpl;
-import org.clevercastle.authforge.repository.rdsjpa.RdsJpaOneTimePasswordRepository;
 import org.clevercastle.authforge.repository.rdsjpa.RdsJpaUserLoginItemRepository;
 import org.clevercastle.authforge.repository.rdsjpa.RdsJpaUserModelRepository;
 import org.clevercastle.authforge.repository.rdsjpa.RdsJpaUserRefreshTokenMappingRepository;
 import org.clevercastle.authforge.repository.rdsjpa.RdsJpaUserRepositoryImpl;
 import org.clevercastle.authforge.token.TokenService;
 import org.clevercastle.authforge.token.jwt.JwtTokenService;
-import org.clevercastle.authforge.code.DummyCodeSender;
+import org.clevercastle.authforge.verification.DummyVerificationService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -37,10 +37,8 @@ public class Beans {
     @Bean
     public UserRepository userRepository(RdsJpaUserModelRepository userModelRepository,
                                          RdsJpaUserLoginItemRepository userLoginItemRepository,
-                                         RdsJpaUserRefreshTokenMappingRepository userRefreshTokenMappingRepository,
-                                         RdsJpaOneTimePasswordRepository oneTimePasswordRepository) {
-        return new RdsJpaUserRepositoryImpl(userModelRepository, userLoginItemRepository,
-                userRefreshTokenMappingRepository, oneTimePasswordRepository);
+                                         RdsJpaUserRefreshTokenMappingRepository userRefreshTokenMappingRepository) {
+        return new RdsJpaUserRepositoryImpl(userModelRepository, userLoginItemRepository, userRefreshTokenMappingRepository);
     }
 
 
@@ -79,8 +77,8 @@ public class Beans {
     }
 
     @Bean
-    public UserService userService(UserRepository userRepository, TokenService tokenService) {
-        return new UserServiceImpl(Config.builder().build(), userRepository, tokenService, new DummyCodeSender());
+    public UserService userService(UserRepository dynamodbUserRepository, TokenService tokenService) {
+        return new UserServiceImpl(Config.builder().build(), dynamodbUserRepository, tokenService, new DummyVerificationService(dynamodbUserRepository));
     }
 
 
