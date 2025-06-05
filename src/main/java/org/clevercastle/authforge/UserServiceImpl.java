@@ -152,7 +152,7 @@ public class UserServiceImpl implements UserService {
             userLoginItem = new UserLoginItem();
             userLoginItem.setUserId(userId);
             userLoginItem.setLoginIdentifier(oauth2User.getLoginIdentifier());
-            userLoginItem.setUserSub(UUID.randomUUID().toString());
+            userLoginItem.setUserSub(oauth2User.getUserSub());
             userLoginItem.setCreatedAt(now);
             userLoginItem.setUpdatedAt(now);
             this.userRepository.save(user, userLoginItem);
