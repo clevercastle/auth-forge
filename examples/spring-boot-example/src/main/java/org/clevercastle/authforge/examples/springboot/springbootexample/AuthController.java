@@ -5,8 +5,8 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.clevercastle.authforge.exception.CastleException;
-import org.clevercastle.authforge.model.User;
-import org.clevercastle.authforge.model.UserLoginItem;
+import org.clevercastle.authforge.entity.User;
+import org.clevercastle.authforge.entity.UserLoginItem;
 import org.clevercastle.authforge.UserRegisterRequest;
 import org.clevercastle.authforge.UserService;
 import org.clevercastle.authforge.UserWithToken;
@@ -83,7 +83,6 @@ public class AuthController {
         userRegisterRequest.setLoginIdentifierPrefix("email");
         return userService.register(userRegisterRequest);
     }
-
 
     @GetMapping("auth/verify")
     public UserWithToken verify(@RequestParam String loginIdentifier, @RequestParam String verificationCode) throws CastleException {
