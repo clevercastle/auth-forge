@@ -30,6 +30,7 @@ dependencies {
     compileOnly("org.springframework.boot:spring-boot-starter-data-jpa:2.7.18")
 
     implementation("org.apache.commons:commons-lang3:3.17.0")
+    implementation("commons-codec:commons-codec:1.15")
     implementation("org.slf4j:slf4j-api:2.0.17")
 
     testImplementation(platform("org.junit:junit-bom:5.10.0"))

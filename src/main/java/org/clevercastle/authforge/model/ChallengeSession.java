@@ -13,6 +13,7 @@ import java.time.OffsetDateTime;
 public class ChallengeSession {
     public enum Type {
         mfa,
+        changePassword
     }
 
     @javax.persistence.Id

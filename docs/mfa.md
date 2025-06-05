@@ -16,3 +16,19 @@ flowchart TD
     J -- Fail to verify --> L[Server: Save the secret key to the database and return success]
     K --> I
 ```
+
+# Mfa Challenge Flow
+
+```mermaid
+flowchart TD
+    A[User login] --> B{Authenticated?}
+    B -- No --> Z[Fail to login]
+    B -- Yes --> C{Server: decide whether need challenge}
+    C -- Yes --> D[Server: Return the challenge to the client, response should include all possible challenge response solutions]
+    C -- No --> Y[Server: Return the token to the user]
+    D --> E[Customer choose on solution and answer the challenge]
+    E --> F{Server: is the response correct}
+    F -- No --> E
+    F -- Yes --> Y
+
+```
