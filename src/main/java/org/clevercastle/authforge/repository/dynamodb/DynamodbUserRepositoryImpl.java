@@ -1,14 +1,12 @@
 package org.clevercastle.authforge.repository.dynamodb;
 
 import jakarta.annotation.Nonnull;
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.clevercastle.authforge.exception.CastleException;
-import org.clevercastle.authforge.model.OneTimePassword;
 import org.clevercastle.authforge.model.User;
 import org.clevercastle.authforge.model.UserLoginItem;
 import org.clevercastle.authforge.model.UserRefreshTokenMapping;
+import org.clevercastle.authforge.exception.CastleException;
 import org.clevercastle.authforge.repository.UserRepository;
 import org.clevercastle.authforge.util.TimeUtils;
 import org.slf4j.Logger;
@@ -164,15 +162,5 @@ public class DynamodbUserRepositoryImpl implements UserRepository {
             }
         }
         return table;
-    }
-
-    @Override
-    public void saveOneTimePassword(OneTimePassword userOneTimePasswordMapping) throws CastleException {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public boolean verifyOneTimePassword(String loginIdentifier, String oneTimePassword) throws CastleException {
-        throw new NotImplementedException();
     }
 }

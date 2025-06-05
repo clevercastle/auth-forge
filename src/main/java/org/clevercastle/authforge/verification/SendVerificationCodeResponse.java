@@ -1,6 +1,6 @@
-package org.clevercastle.authforge.code;
+package org.clevercastle.authforge.verification;
 
-public class SendCodeResponse {
+public class SendVerificationCodeResponse {
     public enum Type {
         success,
         error
@@ -9,7 +9,7 @@ public class SendCodeResponse {
     public Type type;
     public String message;
 
-    public SendCodeResponse(Type type, String message) {
+    public SendVerificationCodeResponse(Type type, String message) {
         this.type = type;
         this.message = message;
     }
