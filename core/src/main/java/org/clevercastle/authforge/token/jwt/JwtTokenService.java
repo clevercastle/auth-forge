@@ -1,9 +1,9 @@
 package org.clevercastle.authforge.token.jwt;
 
 import com.auth0.jwt.algorithms.Algorithm;
-import org.clevercastle.authforge.exception.CastleException;
 import org.clevercastle.authforge.Config;
 import org.clevercastle.authforge.TokenHolder;
+import org.clevercastle.authforge.exception.CastleException;
 import org.clevercastle.authforge.model.User;
 import org.clevercastle.authforge.model.UserLoginItem;
 import org.clevercastle.authforge.token.TokenService;

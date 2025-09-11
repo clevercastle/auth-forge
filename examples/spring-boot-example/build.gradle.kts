@@ -13,13 +13,9 @@ java {
     }
 }
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     developmentOnly("org.springframework.boot:spring-boot-devtools")
-    implementation(rootProject)
+    implementation(project(":core"))
 
     implementation("org.apache.httpcomponents.client5:httpclient5:5.4.2")
     implementation("org.apache.httpcomponents.core5:httpcore5:5.3.4")

@@ -1,7 +1,6 @@
 package org.clevercastle.authforge.mfa.dto;
 
 import java.time.OffsetDateTime;
-import java.util.List;
 
 public class MfaFactorResponse {
     private String id;
