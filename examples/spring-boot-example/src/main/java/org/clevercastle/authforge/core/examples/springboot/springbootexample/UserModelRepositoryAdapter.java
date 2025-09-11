@@ -1,0 +1,10 @@
+package org.clevercastle.authforge.core.examples.springboot.springbootexample;
+
+import org.clevercastle.authforge.core.model.User;
+import org.clevercastle.authforge.core.repository.rdsjpa.RdsJpaUserModelRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface UserModelRepositoryAdapter extends RdsJpaUserModelRepository, JpaRepository<User, String> {
+}
