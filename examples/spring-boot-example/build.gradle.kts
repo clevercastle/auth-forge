@@ -18,6 +18,7 @@ repositories {
 }
 
 dependencies {
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
     implementation(rootProject)
 
     implementation("org.apache.httpcomponents.client5:httpclient5:5.4.2")
@@ -26,13 +27,12 @@ dependencies {
     implementation("software.amazon.awssdk:dynamodb:2.31.31")
     implementation("software.amazon.awssdk:dynamodb-enhanced:2.31.31")
 
-    implementation("org.apache.commons:commons-lang3:3.17.0")
-    implementation("com.auth0:java-jwt:4.5.0")
+    implementation("org.apache.commons:commons-lang3:3.18.0")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-//    developmentOnly("org.springframework.boot:spring-boot-devtools")
-    runtimeOnly("org.postgresql:postgresql:42.7.5")
-    implementation("com.auth0:auth0:2.20.0")
+    runtimeOnly("org.postgresql:postgresql:42.7.7")
+    implementation("com.auth0:auth0:2.24.0")
+    implementation("com.auth0:java-jwt:4.5.0")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

@@ -3,12 +3,16 @@ package org.clevercastle.authforge;
 import org.apache.commons.lang3.tuple.Pair;
 import org.clevercastle.authforge.dto.OneTimePasswordDto;
 import org.clevercastle.authforge.exception.CastleException;
+import org.clevercastle.authforge.mfa.dto.MfaChallengeResponse;
+import org.clevercastle.authforge.mfa.dto.MfaFactorResponse;
 import org.clevercastle.authforge.model.ChallengeSession;
 import org.clevercastle.authforge.model.User;
 import org.clevercastle.authforge.model.UserLoginItem;
 import org.clevercastle.authforge.oauth2.Oauth2ClientConfig;
 import org.clevercastle.authforge.totp.RequestTotpResponse;
 import org.clevercastle.authforge.totp.SetupTotpRequest;
+
+import java.util.List;
 
 public interface UserService {
     // used for username/password, email/password, mobile/password
@@ -41,4 +45,15 @@ public interface UserService {
 
     // setup mfa
     void setupTotp(User user, SetupTotpRequest request) throws CastleException;
+
+    // MFA challenge and verification methods
+    MfaChallengeResponse createMfaChallenge(User user, String challengeType, String factorId) throws CastleException;
+
+    boolean verifyMfaChallenge(String challengeId, String code, String bindingCode) throws CastleException;
+
+    List<MfaFactorResponse> listMfaFactors(String userId) throws CastleException;
+
+    void deleteMfaFactor(String userId, String factorId) throws CastleException;
+
+    boolean verifyTotpCode(String userId, String code) throws CastleException;
 }
