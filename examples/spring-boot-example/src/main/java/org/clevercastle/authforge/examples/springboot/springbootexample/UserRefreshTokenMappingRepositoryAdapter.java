@@ -1,9 +1,0 @@
-package org.clevercastle.authforge.examples.springboot.springbootexample;
-
-import org.clevercastle.authforge.model.UserRefreshTokenMapping;
-import org.clevercastle.authforge.repository.rdsjpa.RdsJpaUserRefreshTokenMappingRepository;
-import org.clevercastle.authforge.repository.rdsjpa.RdsJpaUserRefreshTokenMappingId;
-import org.springframework.data.jpa.repository.JpaRepository;
-
-public interface UserRefreshTokenMappingRepositoryAdapter extends RdsJpaUserRefreshTokenMappingRepository, JpaRepository<UserRefreshTokenMapping, RdsJpaUserRefreshTokenMappingId> {
-}
