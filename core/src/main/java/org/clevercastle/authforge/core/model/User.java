@@ -8,6 +8,7 @@ import jakarta.persistence.Table;
 import org.clevercastle.authforge.core.UserState;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @javax.persistence.Entity
 @javax.persistence.Table(name = "users")
@@ -24,6 +25,8 @@ public class User {
 
     private String resetPasswordCode;
     private OffsetDateTime resetPasswordCodeExpiredAt;
+
+    private List<UserLoginItem> userLoginItems;
 
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;
