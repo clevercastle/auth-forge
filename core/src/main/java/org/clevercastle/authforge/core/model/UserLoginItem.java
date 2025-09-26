@@ -1,11 +1,5 @@
 package org.clevercastle.authforge.core.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-
 import java.time.OffsetDateTime;
 
 /**
@@ -16,10 +10,6 @@ import java.time.OffsetDateTime;
  *
  *  when the user register, it should automatically create a login item & create the corresponding user
  */
-@javax.persistence.Entity
-@javax.persistence.Table(name = "user_login_item")
-@Entity
-@Table(name = "user_login_item")
 public class UserLoginItem {
     public enum Type {
         raw,
@@ -32,17 +22,11 @@ public class UserLoginItem {
         ACTIVE,
     }
 
-    @javax.persistence.Id
-    @Id
     private String loginIdentifier;
     private String loginIdentifierPrefix;
-    @javax.persistence.Enumerated(javax.persistence.EnumType.STRING)
-    @Enumerated(EnumType.STRING)
     private Type type;
     private String userSub;
     private String userId;
-    @javax.persistence.Enumerated(javax.persistence.EnumType.STRING)
-    @Enumerated(EnumType.STRING)
     private State state;
 
     // used for login item verification (loginType == raw)

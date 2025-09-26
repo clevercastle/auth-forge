@@ -8,16 +8,27 @@ plugins {
 group = "org.clevercastle"
 version = "0.0.1-SNAPSHOT"
 
+allprojects {
+    group = "org.clevercastle"
+    version = "0.0.1-SNAPSHOT"
 
-subprojects {
     repositories {
         mavenCentral()
+        gradlePluginPortal()
     }
+}
+
+subprojects {
     apply {
         plugin("java")
         plugin("jacoco")
         plugin("com.vanniktech.maven.publish")
         plugin("signing")
+    }
+
+    dependencies {
+        implementation("org.apache.commons:commons-lang3:3.18.0")
+        implementation("jakarta.annotation:jakarta.annotation-api:2.1.1")
     }
 
     java {
@@ -27,7 +38,7 @@ subprojects {
     }
 
     tasks.withType<JavaCompile>().configureEach {
-        options.release.set(11)
+        options.release.set(21)
     }
 }
 

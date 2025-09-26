@@ -5,7 +5,6 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.clevercastle.authforge.core.UserRegisterRequest;
-import org.clevercastle.authforge.core.UserService;
 import org.clevercastle.authforge.core.UserWithToken;
 import org.clevercastle.authforge.core.dto.OneTimePasswordDto;
 import org.clevercastle.authforge.core.exception.CastleException;
@@ -14,6 +13,9 @@ import org.clevercastle.authforge.core.model.UserLoginItem;
 import org.clevercastle.authforge.core.oauth2.Oauth2ClientConfig;
 import org.clevercastle.authforge.core.oauth2.github.GithubOauth2ExchangeService;
 import org.clevercastle.authforge.core.oauth2.oidc.OidcExchangeService;
+import org.clevercastle.authforge.core.service.OtpService;
+import org.clevercastle.authforge.core.service.TokenSessionService;
+import org.clevercastle.authforge.core.service.UserAuthService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -32,8 +34,8 @@ public class AuthController {
             .oauth2ExchangeService(new OidcExchangeService())
             .clientId("")
             .clientSecret("")
-            .oauth2LoginUrl("https://accounts.google.com/o/oauth2/v2/auth")
-            .oauth2TokenUrl("https://oauth2.googleapis.com/token")
+            .oauth2LoginUrl("https://login.microsoftonline.com/common/oauth2/v2.0/authorize")
+            .oauth2TokenUrl("https://login.microsoftonline.com/common/oauth2/v2.0/token")
             .scopes(List.of("openid", "profile", "email"))
             .emailFunction((map) -> {
                 Object email = map.get("email");
@@ -70,10 +72,14 @@ public class AuthController {
             .build();
 
 
-    private final UserService userService;
+    private final UserAuthService userAuthService;
+    private final OtpService otpService;
+    private final TokenSessionService tokenSessionService;
 
-    public AuthController(UserService userService) {
-        this.userService = userService;
+    public AuthController(UserAuthService userAuthService, OtpService otpService, TokenSessionService tokenSessionService) {
+        this.userAuthService = userAuthService;
+        this.otpService = otpService;
+        this.tokenSessionService = tokenSessionService;
     }
 
     @PostMapping("auth/register")
@@ -82,13 +88,13 @@ public class AuthController {
         userRegisterRequest.setLoginIdentifier("email#" + request.getEmail());
         userRegisterRequest.setPassword(request.getPassword());
         userRegisterRequest.setLoginIdentifierPrefix("email");
-        return userService.register(userRegisterRequest);
+        return userAuthService.register(userRegisterRequest);
     }
 
 
     @GetMapping("auth/verify")
     public UserWithToken verify(@RequestParam String email, @RequestParam String verificationCode) throws CastleException {
-        userService.verify("email#" + email, verificationCode);
+        userAuthService.verify("email#" + email, verificationCode);
         return null;
     }
 
@@ -100,7 +106,7 @@ public class AuthController {
         String[] credentials = new String(Base64.getDecoder().decode(authorization)).split(":");
         String loginIdentifier = "email#" + credentials[0];
         String password = credentials[1];
-        return userService.login(loginIdentifier, password);
+        return userAuthService.login(loginIdentifier, password);
     }
 
     @GetMapping("auth/refresh")
@@ -113,11 +119,11 @@ public class AuthController {
         if (StringUtils.isBlank(userSub)) {
             throw new CastleException("<UNK>");
         }
-        Pair<User, UserLoginItem> pair = userService.getByUserSub(userSub);
+        Pair<User, UserLoginItem> pair = userAuthService.getByUserSub(userSub);
         if (pair.getLeft() == null || pair.getRight() == null) {
             throw new CastleException("<UNK>");
         }
-        return userService.refresh(pair.getLeft(), pair.getRight(), refreshToken.getRefreshToken());
+        return tokenSessionService.refresh(pair.getLeft(), pair.getRight(), refreshToken.getRefreshToken());
     }
 
     @GetMapping("auth/sso/url")
@@ -125,9 +131,9 @@ public class AuthController {
         // decode basic authentication
         switch (ssoType) {
             case google:
-                return userService.generate(googleClientConfig, redirectUrl);
+                return userAuthService.generate(googleClientConfig, redirectUrl);
             case github:
-                return userService.generate(githubClientConfig, redirectUrl);
+                return userAuthService.generate(githubClientConfig, redirectUrl);
         }
         return null;
     }
@@ -136,20 +142,20 @@ public class AuthController {
     public UserWithToken exchange(@RequestParam SsoType ssoType, @RequestParam String code, @RequestParam String state, @RequestParam String redirectUrl) throws CastleException {
         switch (ssoType) {
             case google:
-                return userService.exchange(googleClientConfig, code, state, redirectUrl);
+                return userAuthService.exchange(googleClientConfig, code, state, redirectUrl);
             case github:
-                return userService.exchange(githubClientConfig, code, state, redirectUrl);
+                return userAuthService.exchange(githubClientConfig, code, state, redirectUrl);
         }
         return null;
     }
 
     @GetMapping("auth/one-time-password")
     public OneTimePasswordDto requestOneTimePassword(@RequestParam String email) throws CastleException {
-        return userService.requestOneTimePassword("email#" + email);
+        return otpService.requestOneTimePassword("email#" + email);
     }
 
     @PostMapping("auth/one-time-password")
     public UserWithToken verifyOneTimePassword(@RequestBody VerifyOneTimeRequest request) throws CastleException {
-        return userService.verifyOneTimePassword("email#" + request.getEmail(), request.getOneTimePassword());
+        return otpService.verifyOneTimePassword("email#" + request.getEmail(), request.getOneTimePassword());
     }
 }

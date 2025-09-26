@@ -1,25 +1,12 @@
 package org.clevercastle.authforge.core.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 import org.clevercastle.authforge.core.UserState;
 
 import java.time.OffsetDateTime;
 import java.util.List;
 
-@javax.persistence.Entity
-@javax.persistence.Table(name = "users")
-@Entity
-@Table(name = "users")
 public class User {
-    @javax.persistence.Id
-    @Id
     private String userId;
-    @javax.persistence.Enumerated(javax.persistence.EnumType.STRING)
-    @Enumerated(EnumType.STRING)
     private UserState userState;
     private String hashedPassword;
 

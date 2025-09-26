@@ -8,6 +8,10 @@ public class CastleException extends Exception {
         super(message);
     }
 
+    public CastleException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
     public CastleException(Throwable cause) {
         super(cause);
     }

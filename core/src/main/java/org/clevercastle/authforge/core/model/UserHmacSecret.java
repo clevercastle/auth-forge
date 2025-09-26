@@ -1,25 +1,9 @@
 package org.clevercastle.authforge.core.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.IdClass;
-import jakarta.persistence.Table;
-import org.clevercastle.authforge.core.repository.rdsjpa.RdsJpaUserHmacSecretId;
-
 import java.time.OffsetDateTime;
 
-@javax.persistence.Entity
-@javax.persistence.Table(name = "user_hmac_secret")
-@Entity
-@Table(name = "user_hmac_secret")
-@javax.persistence.IdClass(RdsJpaUserHmacSecretId.class)
-@IdClass(RdsJpaUserHmacSecretId.class)
 public class UserHmacSecret {
-    @javax.persistence.Id
-    @Id
     private String userId;
-    @javax.persistence.Id
-    @Id
     private String id;
 
     private String secret;

@@ -1,26 +1,9 @@
 package org.clevercastle.authforge.core.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.IdClass;
-import jakarta.persistence.Table;
-import org.clevercastle.authforge.core.repository.rdsjpa.RdsJpaOneTimePasswordId;
-import org.clevercastle.authforge.core.repository.rdsjpa.RdsJpaUserRefreshTokenMappingId;
-
 import java.time.OffsetDateTime;
 
-@javax.persistence.Entity
-@javax.persistence.Table(name = "one_time_password")
-@Entity
-@Table(name = "one_time_password")
-@javax.persistence.IdClass(RdsJpaOneTimePasswordId.class)
-@IdClass(RdsJpaUserRefreshTokenMappingId.class)
 public class OneTimePassword {
-    @javax.persistence.Id
-    @Id
     private String loginIdentifier;
-    @javax.persistence.Id
-    @Id
     private String oneTimePassword;
 
     private OffsetDateTime expiredAt;

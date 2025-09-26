@@ -1,28 +1,27 @@
 package org.clevercastle.authforge.core.examples.springboot.springbootexample;
 
 import com.auth0.jwt.algorithms.Algorithm;
-import org.clevercastle.authforge.core.DummyCacheServiceImpl;
+import org.clevercastle.authforge.core.CacheService;
 import org.clevercastle.authforge.core.Config;
-import org.clevercastle.authforge.core.UserService;
-import org.clevercastle.authforge.core.UserServiceImpl;
+import org.clevercastle.authforge.core.DummyCacheServiceImpl;
+import org.clevercastle.authforge.core.code.CodeSender;
+import org.clevercastle.authforge.core.code.DummyCodeSender;
+import org.clevercastle.authforge.core.repository.OneTimePasswordRepository;
+import org.clevercastle.authforge.core.repository.RefreshTokenRepository;
+import org.clevercastle.authforge.core.repository.UserLoginItemRepository;
 import org.clevercastle.authforge.core.repository.UserRepository;
-import org.clevercastle.authforge.core.repository.dynamodb.DynamodbUserRepositoryImpl;
-import org.clevercastle.authforge.core.repository.rdsjpa.RdsJpaChallengeSessionRepository;
-import org.clevercastle.authforge.core.repository.rdsjpa.RdsJpaOneTimePasswordRepository;
-import org.clevercastle.authforge.core.repository.rdsjpa.RdsJpaUserHmacSecretRepository;
-import org.clevercastle.authforge.core.repository.rdsjpa.RdsJpaUserLoginItemRepository;
-import org.clevercastle.authforge.core.repository.rdsjpa.RdsJpaUserModelRepository;
-import org.clevercastle.authforge.core.repository.rdsjpa.RdsJpaUserRefreshTokenMappingRepository;
-import org.clevercastle.authforge.core.repository.rdsjpa.RdsJpaUserRepositoryImpl;
+import org.clevercastle.authforge.core.service.OtpService;
+import org.clevercastle.authforge.core.service.TokenSessionService;
+import org.clevercastle.authforge.core.service.UserAuthService;
+import org.clevercastle.authforge.core.service.impl.OtpServiceImpl;
+import org.clevercastle.authforge.core.service.impl.TokenSessionServiceImpl;
+import org.clevercastle.authforge.core.service.impl.UserAuthServiceImpl;
 import org.clevercastle.authforge.core.token.TokenService;
 import org.clevercastle.authforge.core.token.jwt.JwtTokenService;
-import org.clevercastle.authforge.core.code.DummyCodeSender;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -37,33 +36,9 @@ import java.util.Base64;
 
 @Configuration
 public class Beans {
-    @Bean
-    public UserRepository userRepository(RdsJpaUserModelRepository userModelRepository,
-                                         RdsJpaUserLoginItemRepository userLoginItemRepository,
-                                         RdsJpaUserRefreshTokenMappingRepository userRefreshTokenMappingRepository,
-                                         RdsJpaOneTimePasswordRepository oneTimePasswordRepository,
-                                         RdsJpaChallengeSessionRepository challengeSessionRepository,
-                                         RdsJpaUserHmacSecretRepository userHmacSecretRepository) {
-        return new RdsJpaUserRepositoryImpl(userModelRepository, userLoginItemRepository,
-                userRefreshTokenMappingRepository, oneTimePasswordRepository, challengeSessionRepository, userHmacSecretRepository);
-    }
 
-
-    @Bean
-    public UserRepository dynamodbUserRepository(DynamoDbEnhancedClient dynamodbEnhancedClient, DynamoDbClient dynamodbClient) {
-        return new DynamodbUserRepositoryImpl(dynamodbEnhancedClient, dynamodbClient);
-    }
-
-    @Bean
-    public DynamoDbClient dynamoDbClient() {
-        return DynamoDbClient.builder().build();
-    }
-
-    @Bean
-    public DynamoDbEnhancedClient dynamoDbEnhancedClient(DynamoDbClient dynamoDbClient) {
-        return DynamoDbEnhancedClient.builder().dynamoDbClient(dynamoDbClient).build();
-    }
-
+    // PostgreSQL repository implementations are auto-detected by Spring Boot via @Repository annotations
+    // No need to manually create beans - Spring will auto-wire them
 
     @Bean
     public TokenService tokenService() throws NoSuchAlgorithmException, InvalidKeySpecException {
@@ -84,10 +59,48 @@ public class Beans {
     }
 
     @Bean
-    public UserService userService(UserRepository userRepository, TokenService tokenService) {
-        return new UserServiceImpl(Config.builder().build(), userRepository, tokenService, new DummyCodeSender(), new DummyCacheServiceImpl());
+    public Config config() {
+        return Config.builder().build();
     }
 
+    @Bean
+    public CodeSender codeSender() {
+        return new DummyCodeSender();
+    }
+
+    @Bean
+    public CacheService cacheService() {
+        return new DummyCacheServiceImpl();
+    }
+
+    @Bean
+    public UserAuthService userAuthService(Config config,
+                                           UserRepository userModelRepository,
+                                           UserLoginItemRepository loginItemRepository,
+                                           RefreshTokenRepository refreshTokenRepository,
+                                           TokenService tokenService,
+                                           CodeSender codeSender,
+                                           CacheService cacheService) {
+        return new UserAuthServiceImpl(config, userModelRepository, loginItemRepository,
+                refreshTokenRepository, tokenService, codeSender, cacheService);
+    }
+
+    @Bean
+    public OtpService otpService(Config config,
+                                 OneTimePasswordRepository oneTimePasswordRepository,
+                                 TokenService tokenService,
+                                 CodeSender codeSender,
+                                 RefreshTokenRepository refreshTokenRepository,
+                                 UserAuthService userAuthService) {
+        return new OtpServiceImpl(config, oneTimePasswordRepository, tokenService,
+                codeSender, refreshTokenRepository, userAuthService);
+    }
+
+    @Bean
+    public TokenSessionService tokenSessionService(RefreshTokenRepository refreshTokenRepository,
+                                                   TokenService tokenService) {
+        return new TokenSessionServiceImpl(refreshTokenRepository, tokenService);
+    }
 
     @Bean
     public WebMvcConfigurer corsConfigurer() {
