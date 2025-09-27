@@ -1,23 +1,13 @@
 package org.clevercastle.authforge.core.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-
 import java.time.OffsetDateTime;
 
-@javax.persistence.Entity
-@javax.persistence.Table(name = "challenge_session")
-@Entity
-@Table(name = "challenge_session")
 public class ChallengeSession {
     public enum Type {
         mfa,
         changePassword
     }
 
-    @javax.persistence.Id
-    @Id
     private String id;
     private Type type;
 
