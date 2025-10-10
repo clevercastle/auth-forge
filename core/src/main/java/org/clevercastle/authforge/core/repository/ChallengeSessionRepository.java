@@ -1,7 +1,7 @@
 package org.clevercastle.authforge.core.repository;
 
+import org.clevercastle.authforge.core.challenge.ChallengeSession;
 import org.clevercastle.authforge.core.exception.CastleException;
-import org.clevercastle.authforge.core.model.ChallengeSession;
 
 public interface ChallengeSessionRepository {
     void createChallenge(ChallengeSession session) throws CastleException;

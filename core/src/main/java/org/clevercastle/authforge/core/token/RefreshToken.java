@@ -1,4 +1,4 @@
-package org.clevercastle.authforge.core;
+package org.clevercastle.authforge.core.token;
 
 import jakarta.annotation.Nonnull;
 

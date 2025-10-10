@@ -1,4 +1,4 @@
-package org.clevercastle.authforge.core.model;
+package org.clevercastle.authforge.core.challenge;
 
 import java.time.OffsetDateTime;
 

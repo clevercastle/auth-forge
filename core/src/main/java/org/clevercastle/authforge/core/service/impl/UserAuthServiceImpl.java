@@ -3,25 +3,27 @@ package org.clevercastle.authforge.core.service.impl;
 import jakarta.annotation.Nonnull;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.tuple.Pair;
-import org.clevercastle.authforge.core.CacheService;
+import org.clevercastle.authforge.core.Application;
 import org.clevercastle.authforge.core.Config;
-import org.clevercastle.authforge.core.UserRegisterRequest;
-import org.clevercastle.authforge.core.UserState;
-import org.clevercastle.authforge.core.UserWithToken;
 import org.clevercastle.authforge.core.code.CodeSender;
 import org.clevercastle.authforge.core.exception.CastleException;
 import org.clevercastle.authforge.core.exception.UserExistException;
 import org.clevercastle.authforge.core.exception.UserNotFoundException;
-import org.clevercastle.authforge.core.model.User;
-import org.clevercastle.authforge.core.model.UserLoginItem;
 import org.clevercastle.authforge.core.oauth2.Oauth2ClientConfig;
 import org.clevercastle.authforge.core.oauth2.Oauth2User;
 import org.clevercastle.authforge.core.repository.RefreshTokenRepository;
 import org.clevercastle.authforge.core.repository.UserLoginItemRepository;
 import org.clevercastle.authforge.core.repository.UserRepository;
+import org.clevercastle.authforge.core.service.CacheService;
+import org.clevercastle.authforge.core.service.TokenManager;
 import org.clevercastle.authforge.core.service.UserAuthService;
-import org.clevercastle.authforge.core.token.TokenService;
+import org.clevercastle.authforge.core.user.User;
+import org.clevercastle.authforge.core.user.UserLoginItem;
+import org.clevercastle.authforge.core.user.UserRegisterRequest;
+import org.clevercastle.authforge.core.user.UserState;
+import org.clevercastle.authforge.core.user.UserWithToken;
 import org.clevercastle.authforge.core.util.CodeUtil;
 import org.clevercastle.authforge.core.util.HashUtil;
 import org.clevercastle.authforge.core.util.IdUtil;
@@ -36,7 +38,7 @@ public class UserAuthServiceImpl implements UserAuthService {
     private final UserRepository userModelRepository;
     private final UserLoginItemRepository loginItemRepository;
     private final RefreshTokenRepository refreshTokenRepository;
-    private final TokenService tokenService;
+    private final TokenManager tokenManager;
     private final CodeSender codeSender;
     private final CacheService cacheService;
 
@@ -44,14 +46,14 @@ public class UserAuthServiceImpl implements UserAuthService {
                                UserRepository userModelRepository,
                                UserLoginItemRepository loginItemRepository,
                                RefreshTokenRepository refreshTokenRepository,
-                               TokenService tokenService,
+                               TokenManager tokenManager,
                                CodeSender codeSender,
                                CacheService cacheService) {
         this.config = config;
         this.userModelRepository = userModelRepository;
         this.loginItemRepository = loginItemRepository;
         this.refreshTokenRepository = refreshTokenRepository;
-        this.tokenService = tokenService;
+        this.tokenManager = tokenManager;
         this.codeSender = codeSender;
         this.cacheService = cacheService;
     }
@@ -108,7 +110,7 @@ public class UserAuthServiceImpl implements UserAuthService {
         if (userLoginItem.getVerificationCodeExpiredAt() == null || userLoginItem.getVerificationCodeExpiredAt().isBefore(TimeUtils.now())) {
             throw new CastleException();
         }
-        if (StringUtils.equals(verificationCode, userLoginItem.getVerificationCode())) {
+        if (Strings.CS.equals(verificationCode, userLoginItem.getVerificationCode())) {
             loginItemRepository.confirmLoginItem(loginIdentifier);
         } else {
             throw new CastleException();
@@ -117,7 +119,7 @@ public class UserAuthServiceImpl implements UserAuthService {
 
     @Override
     @Transactional
-    public UserWithToken login(String loginIdentifier, String password) throws CastleException {
+    public UserWithToken login(Application application, String loginIdentifier, String password) throws CastleException {
         Pair<User, UserLoginItem> pair = getByLoginIdentifier(loginIdentifier);
         var user = pair.getLeft();
         var userLoginItem = pair.getRight();
@@ -134,9 +136,10 @@ public class UserAuthServiceImpl implements UserAuthService {
         if (!verify) {
             throw new CastleException("Incorrect password");
         }
-        var tokenHolder = tokenService.generateToken(user, userLoginItem);
-        refreshTokenRepository.addRefreshToken(user, tokenHolder.getRefreshToken(), tokenHolder.getExpiresAt());
-        return new UserWithToken(user, tokenHolder);
+        UserWithToken userWithToken = tokenManager.generateToken(user, userLoginItem, application);
+        refreshTokenRepository.addRefreshToken(user, userWithToken.getTokenHolder().getRefreshToken(),
+                userWithToken.getTokenHolder().getExpiresAt());
+        return userWithToken;
     }
 
     @Nonnull
@@ -193,7 +196,7 @@ public class UserAuthServiceImpl implements UserAuthService {
     }
 
     @Override
-    public UserWithToken exchange(Oauth2ClientConfig clientConfig, String authorizationCode, String state, String redirectUrl) throws CastleException {
+    public UserWithToken exchange(Application application, Oauth2ClientConfig clientConfig, String authorizationCode, String state, String redirectUrl) throws CastleException {
         Oauth2User oauth2User = clientConfig.getOauth2ExchangeService().exchange(clientConfig, authorizationCode, state, redirectUrl);
         if (StringUtils.isBlank(oauth2User.getLoginIdentifier())) {
             throw new CastleException();
@@ -219,17 +222,19 @@ public class UserAuthServiceImpl implements UserAuthService {
             userLoginItem.setUpdatedAt(now);
             userModelRepository.save(user);
             loginItemRepository.save(userLoginItem);
-            var tokenHolder = tokenService.generateToken(user, userLoginItem);
-            refreshTokenRepository.addRefreshToken(user, tokenHolder.getRefreshToken(), tokenHolder.getExpiresAt());
-            return new UserWithToken(user, tokenHolder);
+            var userWithToken = tokenManager.generateToken(user, userLoginItem, application);
+            refreshTokenRepository.addRefreshToken(user, userWithToken.getTokenHolder().getRefreshToken(),
+                    userWithToken.getTokenHolder().getExpiresAt());
+            return userWithToken;
         } else {
             // login process
             if (user == null || UserState.ACTIVE != user.getUserState()) {
                 throw new CastleException("");
             }
-            var tokenHolder = tokenService.generateToken(user, userLoginItem);
-            refreshTokenRepository.addRefreshToken(user, tokenHolder.getRefreshToken(), tokenHolder.getExpiresAt());
-            return new UserWithToken(user, tokenHolder);
+            var userWithToken = tokenManager.generateToken(user, userLoginItem, application);
+            refreshTokenRepository.addRefreshToken(user, userWithToken.getTokenHolder().getRefreshToken(),
+                    userWithToken.getTokenHolder().getExpiresAt());
+            return userWithToken;
         }
     }
 }

@@ -1,6 +1,7 @@
 package org.clevercastle.authforge.core;
 
 import org.apache.commons.lang3.StringUtils;
+import org.clevercastle.authforge.core.service.CacheService;
 
 import java.util.HashMap;
 import java.util.Map;

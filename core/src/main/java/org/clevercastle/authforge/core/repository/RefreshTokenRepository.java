@@ -1,8 +1,8 @@
 package org.clevercastle.authforge.core.repository;
 
 import org.clevercastle.authforge.core.exception.CastleException;
-import org.clevercastle.authforge.core.model.User;
-import org.clevercastle.authforge.core.model.UserRefreshTokenMapping;
+import org.clevercastle.authforge.core.token.UserRefreshTokenMapping;
+import org.clevercastle.authforge.core.user.User;
 
 import java.time.OffsetDateTime;
 

@@ -1,6 +1,6 @@
 package org.clevercastle.authforge.core.util;
 
-import org.clevercastle.authforge.core.model.ResourceType;
+import org.clevercastle.authforge.core.ResourceType;
 
 import java.util.UUID;
 

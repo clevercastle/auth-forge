@@ -1,4 +1,4 @@
-package org.clevercastle.authforge.core.model;
+package org.clevercastle.authforge.core.user;
 
 import java.time.OffsetDateTime;
 
@@ -6,7 +6,7 @@ import java.time.OffsetDateTime;
  *  one user may have a lot of login solution
  *  raw: username + password / email + password / mobile + password
  *  sso login: github / google / apple
- *  enterprise login: ldap
+ *  oauth2: the 3rd party oauth2 login ( not include sso login )
  *
  *  when the user register, it should automatically create a login item & create the corresponding user
  */

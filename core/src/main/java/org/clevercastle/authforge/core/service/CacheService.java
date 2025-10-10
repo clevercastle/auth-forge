@@ -1,4 +1,4 @@
-package org.clevercastle.authforge.core;
+package org.clevercastle.authforge.core.service;
 
 public interface CacheService {
     void set(String key, String value, long ttl);

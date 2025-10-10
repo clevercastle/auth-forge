@@ -20,6 +20,10 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("org.mockito:mockito-core:5.17.0")
     testImplementation("ch.qos.logback:logback-classic:1.5.18")
+    testImplementation(platform("org.testcontainers:testcontainers-bom:1.20.4"))
+    testImplementation("org.testcontainers:junit-jupiter")
+    testImplementation("org.testcontainers:postgresql")
+    testImplementation("org.postgresql:postgresql:42.7.4")
 }
 
 tasks.jacocoTestReport {

@@ -1,6 +1,4 @@
-package org.clevercastle.authforge.core.model;
-
-import org.clevercastle.authforge.core.UserState;
+package org.clevercastle.authforge.core.user;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -58,13 +56,13 @@ public class User {
         this.resetPasswordCodeExpiredAt = resetPasswordCodeExpiredAt;
     }
 
-//    public Set<RefreshToken> getRefreshTokens() {
-//        return refreshTokens;
-//    }
-//
-//    public void setRefreshTokens(Set<RefreshToken> refreshTokens) {
-//        this.refreshTokens = refreshTokens;
-//    }
+    public List<UserLoginItem> getUserLoginItems() {
+        return userLoginItems;
+    }
+
+    public void setUserLoginItems(List<UserLoginItem> userLoginItems) {
+        this.userLoginItems = userLoginItems;
+    }
 
     public OffsetDateTime getCreatedAt() {
         return createdAt;

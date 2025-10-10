@@ -1,4 +1,4 @@
-package org.clevercastle.authforge.core.dto;
+package org.clevercastle.authforge.core.otp;
 
 import java.time.OffsetDateTime;
 

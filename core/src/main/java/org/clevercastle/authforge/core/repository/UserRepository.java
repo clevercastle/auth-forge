@@ -1,7 +1,7 @@
 package org.clevercastle.authforge.core.repository;
 
 import org.clevercastle.authforge.core.exception.CastleException;
-import org.clevercastle.authforge.core.model.User;
+import org.clevercastle.authforge.core.user.User;
 
 /** Repository for User aggregate (user entity only). */
 public interface UserRepository {

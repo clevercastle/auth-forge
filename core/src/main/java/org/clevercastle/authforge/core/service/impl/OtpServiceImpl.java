@@ -1,41 +1,42 @@
 package org.clevercastle.authforge.core.service.impl;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.clevercastle.authforge.core.Application;
 import org.clevercastle.authforge.core.Config;
-import org.clevercastle.authforge.core.UserState;
-import org.clevercastle.authforge.core.UserWithToken;
 import org.clevercastle.authforge.core.code.CodeSender;
-import org.clevercastle.authforge.core.dto.OneTimePasswordDto;
 import org.clevercastle.authforge.core.exception.CastleException;
 import org.clevercastle.authforge.core.exception.UserNotFoundException;
-import org.clevercastle.authforge.core.model.OneTimePassword;
-import org.clevercastle.authforge.core.model.User;
-import org.clevercastle.authforge.core.model.UserLoginItem;
+import org.clevercastle.authforge.core.otp.OneTimePassword;
+import org.clevercastle.authforge.core.otp.OneTimePasswordDto;
 import org.clevercastle.authforge.core.repository.OneTimePasswordRepository;
 import org.clevercastle.authforge.core.repository.RefreshTokenRepository;
 import org.clevercastle.authforge.core.service.OtpService;
+import org.clevercastle.authforge.core.service.TokenManager;
 import org.clevercastle.authforge.core.service.UserAuthService;
-import org.clevercastle.authforge.core.token.TokenService;
+import org.clevercastle.authforge.core.user.User;
+import org.clevercastle.authforge.core.user.UserLoginItem;
+import org.clevercastle.authforge.core.user.UserState;
+import org.clevercastle.authforge.core.user.UserWithToken;
 import org.clevercastle.authforge.core.util.CodeUtil;
 import org.clevercastle.authforge.core.util.TimeUtils;
 
 public class OtpServiceImpl implements OtpService {
     private final Config config;
     private final OneTimePasswordRepository oneTimePasswordRepository;
-    private final TokenService tokenService;
+    private final TokenManager tokenManager;
     private final CodeSender codeSender;
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserAuthService userAuthService;
 
     public OtpServiceImpl(Config config,
                           OneTimePasswordRepository oneTimePasswordRepository,
-                          TokenService tokenService,
+                          TokenManager tokenManager,
                           CodeSender codeSender,
                           RefreshTokenRepository refreshTokenRepository,
                           UserAuthService userAuthService) {
         this.config = config;
         this.oneTimePasswordRepository = oneTimePasswordRepository;
-        this.tokenService = tokenService;
+        this.tokenManager = tokenManager;
         this.codeSender = codeSender;
         this.refreshTokenRepository = refreshTokenRepository;
         this.userAuthService = userAuthService;
@@ -68,7 +69,7 @@ public class OtpServiceImpl implements OtpService {
     }
 
     @Override
-    public UserWithToken verifyOneTimePassword(String loginIdentifier, String oneTimePassword) throws CastleException {
+    public UserWithToken verifyOneTimePassword(Application application, String loginIdentifier, String oneTimePassword) throws CastleException {
         if (!oneTimePasswordRepository.verifyOneTimePassword(loginIdentifier, oneTimePassword)) {
             throw new CastleException();
         }
@@ -82,8 +83,9 @@ public class OtpServiceImpl implements OtpService {
         if (UserState.ACTIVE != pair.getLeft().getUserState()) {
             throw new CastleException("The user is not confirmed");
         }
-        var tokenHolder = tokenService.generateToken(pair.getLeft(), pair.getRight());
-        refreshTokenRepository.addRefreshToken(pair.getLeft(), tokenHolder.getRefreshToken(), tokenHolder.getExpiresAt());
-        return new UserWithToken(pair.getLeft(), tokenHolder);
+        var userWithToken = tokenManager.generateToken(pair.getLeft(), pair.getRight(), application);
+        refreshTokenRepository.addRefreshToken(pair.getLeft(), userWithToken.getTokenHolder().getRefreshToken(),
+                userWithToken.getTokenHolder().getExpiresAt());
+        return userWithToken;
     }
 }

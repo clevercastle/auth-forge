@@ -1,6 +1,6 @@
-package org.clevercastle.authforge.core;
+package org.clevercastle.authforge.core.user;
 
-import org.clevercastle.authforge.core.model.User;
+import org.clevercastle.authforge.core.token.TokenHolder;
 
 public class UserWithToken {
     private final User user;

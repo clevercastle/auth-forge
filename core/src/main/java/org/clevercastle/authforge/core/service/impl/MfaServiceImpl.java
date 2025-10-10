@@ -1,20 +1,20 @@
 package org.clevercastle.authforge.core.service.impl;
 
 import org.apache.commons.lang3.StringUtils;
-import org.clevercastle.authforge.core.CacheService;
+import org.clevercastle.authforge.core.ResourceType;
+import org.clevercastle.authforge.core.challenge.ChallengeSession;
 import org.clevercastle.authforge.core.exception.CastleException;
 import org.clevercastle.authforge.core.mfa.dto.MfaChallengeResponse;
 import org.clevercastle.authforge.core.mfa.dto.MfaFactorResponse;
-import org.clevercastle.authforge.core.model.ChallengeSession;
-import org.clevercastle.authforge.core.model.ResourceType;
-import org.clevercastle.authforge.core.model.User;
 import org.clevercastle.authforge.core.model.UserHmacSecret;
 import org.clevercastle.authforge.core.repository.ChallengeSessionRepository;
 import org.clevercastle.authforge.core.repository.UserHmacSecretRepository;
+import org.clevercastle.authforge.core.service.CacheService;
 import org.clevercastle.authforge.core.service.MfaService;
 import org.clevercastle.authforge.core.totp.RequestTotpResponse;
 import org.clevercastle.authforge.core.totp.SetupTotpRequest;
 import org.clevercastle.authforge.core.totp.TotpUtil;
+import org.clevercastle.authforge.core.user.User;
 import org.clevercastle.authforge.core.util.IdUtil;
 import org.clevercastle.authforge.core.util.TimeUtils;
 
