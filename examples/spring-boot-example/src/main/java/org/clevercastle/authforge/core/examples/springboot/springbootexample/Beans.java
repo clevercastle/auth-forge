@@ -11,13 +11,13 @@ import org.clevercastle.authforge.core.repository.RefreshTokenRepository;
 import org.clevercastle.authforge.core.repository.UserLoginItemRepository;
 import org.clevercastle.authforge.core.repository.UserRepository;
 import org.clevercastle.authforge.core.service.OtpService;
-import org.clevercastle.authforge.core.service.TokenSessionService;
+import org.clevercastle.authforge.core.service.TokenManager;
 import org.clevercastle.authforge.core.service.UserAuthService;
 import org.clevercastle.authforge.core.service.impl.OtpServiceImpl;
-import org.clevercastle.authforge.core.service.impl.TokenSessionServiceImpl;
+import org.clevercastle.authforge.core.service.impl.TokenManagerImpl;
 import org.clevercastle.authforge.core.service.impl.UserAuthServiceImpl;
-import org.clevercastle.authforge.core.token.TokenService;
-import org.clevercastle.authforge.core.token.jwt.JwtTokenService;
+import org.clevercastle.authforge.core.token.TokenGenerator;
+import org.clevercastle.authforge.core.token.jwt.SelfHostTokenGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -41,7 +41,7 @@ public class Beans {
     // No need to manually create beans - Spring will auto-wire them
 
     @Bean
-    public TokenService tokenService() throws NoSuchAlgorithmException, InvalidKeySpecException {
+    public TokenGenerator tokenService() throws NoSuchAlgorithmException, InvalidKeySpecException {
         String privateKeyBase64 = "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQg9dIFmLwqXyr9fLX8XYOL5tiS63YJP0NGo9+7wqm3gdahRANCAATcI/NjILO7b1x7CQwHkB2+CGsrIKqI94fh8aEtaWTIzGYn1vct9u2/AvORtn6qBpi4/rJH4XxFekFigifbXors";
         byte[] publicKeyBytes = Base64.getDecoder().decode("MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE3CPzYyCzu29cewkMB5AdvghrKyCqiPeH4fGhLWlkyMxmJ9b3LfbtvwLzkbZ+qgaYuP6yR+F8RXpBYoIn216K7A==");
         KeyFactory keyFactory = KeyFactory.getInstance("EC");
@@ -55,7 +55,7 @@ public class Beans {
 
         // Validate the key type and curve
         var algorithm = Algorithm.ECDSA256((ECPublicKey) publicKey, (ECPrivateKey) privateKey);
-        return new JwtTokenService(Config.builder().build(), "client-01", "kid", algorithm);
+        return new TokenGenerator(Config.builder().build(), "client-01", "kid", algorithm);
     }
 
     @Bean
@@ -78,7 +78,7 @@ public class Beans {
                                            UserRepository userModelRepository,
                                            UserLoginItemRepository loginItemRepository,
                                            RefreshTokenRepository refreshTokenRepository,
-                                           TokenService tokenService,
+                                           TokenGenerator tokenService,
                                            CodeSender codeSender,
                                            CacheService cacheService) {
         return new UserAuthServiceImpl(config, userModelRepository, loginItemRepository,
@@ -88,7 +88,7 @@ public class Beans {
     @Bean
     public OtpService otpService(Config config,
                                  OneTimePasswordRepository oneTimePasswordRepository,
-                                 TokenService tokenService,
+                                 TokenGenerator tokenService,
                                  CodeSender codeSender,
                                  RefreshTokenRepository refreshTokenRepository,
                                  UserAuthService userAuthService) {
@@ -97,9 +97,9 @@ public class Beans {
     }
 
     @Bean
-    public TokenSessionService tokenSessionService(RefreshTokenRepository refreshTokenRepository,
-                                                   TokenService tokenService) {
-        return new TokenSessionServiceImpl(refreshTokenRepository, tokenService);
+    public TokenManager tokenSessionService(RefreshTokenRepository refreshTokenRepository,
+                                            TokenGenerator tokenService) {
+        return new TokenManagerImpl(refreshTokenRepository, tokenService);
     }
 
     @Bean

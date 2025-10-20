@@ -8,5 +8,7 @@ public interface UserRepository {
     User save(User user) throws CastleException;
 
     User getByUserId(String userId) throws CastleException;
+
+    User patch(String userId, PatchUserRequest request) throws CastleException;
 }
 

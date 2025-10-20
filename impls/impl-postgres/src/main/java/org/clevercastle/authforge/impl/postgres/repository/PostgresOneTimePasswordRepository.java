@@ -1,7 +1,7 @@
 package org.clevercastle.authforge.impl.postgres.repository;
 
 import org.clevercastle.authforge.core.exception.CastleException;
-import org.clevercastle.authforge.core.model.OneTimePassword;
+import org.clevercastle.authforge.core.otp.OneTimePassword;
 import org.clevercastle.authforge.core.repository.OneTimePasswordRepository;
 import org.clevercastle.authforge.impl.postgres.entity.OneTimePasswordEntity;
 import org.clevercastle.authforge.impl.postgres.mapper.OneTimePasswordMapper;

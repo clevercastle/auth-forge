@@ -74,9 +74,9 @@ public class AuthController {
 
     private final UserAuthService userAuthService;
     private final OtpService otpService;
-    private final TokenSessionService tokenSessionService;
+    private final TokenManager tokenSessionService;
 
-    public AuthController(UserAuthService userAuthService, OtpService otpService, TokenSessionService tokenSessionService) {
+    public AuthController(UserAuthService userAuthService, OtpService otpService, TokenManager tokenSessionService) {
         this.userAuthService = userAuthService;
         this.otpService = otpService;
         this.tokenSessionService = tokenSessionService;

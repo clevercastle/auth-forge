@@ -5,27 +5,33 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import org.clevercastle.authforge.core.model.UserLoginItem;
+import org.clevercastle.authforge.core.user.UserLoginItem;
 
 import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "user_login_items")
+@IdClass(UserLoginItemId.class)
 public class UserLoginItemEntity {
 
     @Id
-    @Column
-    private String loginIdentifier;
+    @Column(nullable = false)
+    private String loginIdentifierType;
 
-    @Column
-    private String loginIdentifierPrefix;
+    @Id
+    @Column(nullable = false)
+    private String loginIdentifier;
 
     @Enumerated(EnumType.STRING)
     @Column
     private UserLoginItem.Type type;
+
+    @Column
+    private String ssoSub;
 
     @Column
     private String userSub;
@@ -36,12 +42,6 @@ public class UserLoginItemEntity {
     @Enumerated(EnumType.STRING)
     @Column
     private UserLoginItem.State state;
-
-    @Column
-    private String verificationCode;
-
-    @Column
-    private OffsetDateTime verificationCodeExpiredAt;
 
     @Column
     private OffsetDateTime createdAt;
@@ -61,7 +61,6 @@ public class UserLoginItemEntity {
         updatedAt = OffsetDateTime.now();
     }
 
-    // Getters and setters
     public String getLoginIdentifier() {
         return loginIdentifier;
     }
@@ -70,12 +69,12 @@ public class UserLoginItemEntity {
         this.loginIdentifier = loginIdentifier;
     }
 
-    public String getLoginIdentifierPrefix() {
-        return loginIdentifierPrefix;
+    public String getLoginIdentifierType() {
+        return loginIdentifierType;
     }
 
-    public void setLoginIdentifierPrefix(String loginIdentifierPrefix) {
-        this.loginIdentifierPrefix = loginIdentifierPrefix;
+    public void setLoginIdentifierType(String loginIdentifierType) {
+        this.loginIdentifierType = loginIdentifierType;
     }
 
     public UserLoginItem.Type getType() {
@@ -84,6 +83,14 @@ public class UserLoginItemEntity {
 
     public void setType(UserLoginItem.Type type) {
         this.type = type;
+    }
+
+    public String getSsoSub() {
+        return ssoSub;
+    }
+
+    public void setSsoSub(String ssoSub) {
+        this.ssoSub = ssoSub;
     }
 
     public String getUserSub() {
@@ -108,22 +115,6 @@ public class UserLoginItemEntity {
 
     public void setState(UserLoginItem.State state) {
         this.state = state;
-    }
-
-    public String getVerificationCode() {
-        return verificationCode;
-    }
-
-    public void setVerificationCode(String verificationCode) {
-        this.verificationCode = verificationCode;
-    }
-
-    public OffsetDateTime getVerificationCodeExpiredAt() {
-        return verificationCodeExpiredAt;
-    }
-
-    public void setVerificationCodeExpiredAt(OffsetDateTime verificationCodeExpiredAt) {
-        this.verificationCodeExpiredAt = verificationCodeExpiredAt;
     }
 
     public OffsetDateTime getCreatedAt() {

@@ -1,12 +1,21 @@
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    options.release.set(17)
+}
+
 dependencies {
     implementation(project(":core"))
 
-    implementation("org.springframework:spring-context:6.2.11")
-    // Spring Data JPA
-    implementation("org.springframework.data:spring-data-commons:3.5.4") {
+    implementation("org.springframework:spring-context:6.2.12")
+    compileOnly("org.springframework.data:spring-data-commons:3.5.5") {
         isTransitive = false
     }
-    implementation("org.springframework.data:spring-data-jpa:3.5.4") {
+    compileOnly("org.springframework.data:spring-data-jpa:3.5.5") {
         isTransitive = false
     }
 

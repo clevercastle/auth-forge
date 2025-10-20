@@ -29,16 +29,27 @@ subprojects {
     dependencies {
         implementation("org.apache.commons:commons-lang3:3.18.0")
         implementation("jakarta.annotation:jakarta.annotation-api:2.1.1")
+
+        testImplementation(platform("org.junit:junit-bom:5.10.0"))
+        testImplementation("org.junit.jupiter:junit-jupiter")
+        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+        testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     }
 
-    java {
-        toolchain {
-            languageVersion = JavaLanguageVersion.of(21)
+    if (project.name == "core") {
+        java {
+            toolchain {
+                languageVersion = JavaLanguageVersion.of(11)
+            }
+        }
+        tasks.withType<JavaCompile>().configureEach {
+            options.release.set(11)
         }
     }
 
-    tasks.withType<JavaCompile>().configureEach {
-        options.release.set(21)
+    tasks.test {
+        useJUnitPlatform()
     }
 }
+
 

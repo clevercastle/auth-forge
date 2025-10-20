@@ -1,17 +1,11 @@
 package org.clevercastle.authforge.core.user;
 
 import java.time.OffsetDateTime;
-import java.util.List;
 
 public class User {
     private String userId;
-    private UserState userState;
+    private UserState state;
     private String hashedPassword;
-
-    private String resetPasswordCode;
-    private OffsetDateTime resetPasswordCodeExpiredAt;
-
-    private List<UserLoginItem> userLoginItems;
 
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;
@@ -24,12 +18,12 @@ public class User {
         this.userId = userId;
     }
 
-    public UserState getUserState() {
-        return userState;
+    public UserState getState() {
+        return state;
     }
 
-    public void setUserState(UserState userState) {
-        this.userState = userState;
+    public void setState(UserState state) {
+        this.state = state;
     }
 
     public String getHashedPassword() {
@@ -38,30 +32,6 @@ public class User {
 
     public void setHashedPassword(String hashedPassword) {
         this.hashedPassword = hashedPassword;
-    }
-
-    public String getResetPasswordCode() {
-        return resetPasswordCode;
-    }
-
-    public void setResetPasswordCode(String resetPasswordCode) {
-        this.resetPasswordCode = resetPasswordCode;
-    }
-
-    public OffsetDateTime getResetPasswordCodeExpiredAt() {
-        return resetPasswordCodeExpiredAt;
-    }
-
-    public void setResetPasswordCodeExpiredAt(OffsetDateTime resetPasswordCodeExpiredAt) {
-        this.resetPasswordCodeExpiredAt = resetPasswordCodeExpiredAt;
-    }
-
-    public List<UserLoginItem> getUserLoginItems() {
-        return userLoginItems;
-    }
-
-    public void setUserLoginItems(List<UserLoginItem> userLoginItems) {
-        this.userLoginItems = userLoginItems;
     }
 
     public OffsetDateTime getCreatedAt() {

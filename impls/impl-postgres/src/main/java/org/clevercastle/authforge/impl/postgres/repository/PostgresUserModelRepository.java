@@ -1,8 +1,9 @@
 package org.clevercastle.authforge.impl.postgres.repository;
 
 import org.clevercastle.authforge.core.exception.CastleException;
-import org.clevercastle.authforge.core.model.User;
+import org.clevercastle.authforge.core.repository.PatchUserRequest;
 import org.clevercastle.authforge.core.repository.UserRepository;
+import org.clevercastle.authforge.core.user.User;
 import org.clevercastle.authforge.impl.postgres.entity.UserEntity;
 import org.clevercastle.authforge.impl.postgres.mapper.UserMapper;
 import org.clevercastle.authforge.impl.postgres.repository.jpa.UserJpaRepository;
@@ -38,5 +39,10 @@ public class PostgresUserModelRepository implements UserRepository {
         } catch (Exception e) {
             throw new CastleException("Failed to get user by id: " + e.getMessage(), e);
         }
+    }
+
+    @Override
+    public User patch(String userId, PatchUserRequest request) throws CastleException {
+        return null;
     }
 }

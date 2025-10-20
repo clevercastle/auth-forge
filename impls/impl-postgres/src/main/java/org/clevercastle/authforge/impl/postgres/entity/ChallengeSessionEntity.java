@@ -7,7 +7,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
-import org.clevercastle.authforge.core.model.ChallengeSession;
+import org.clevercastle.authforge.core.challenge.ChallengeSession;
 
 import java.time.OffsetDateTime;
 
@@ -25,9 +25,6 @@ public class ChallengeSessionEntity {
 
     @Column
     private String userId;
-
-    @Column
-    private boolean verified = false;
 
     @Column
     private OffsetDateTime createdAt;
@@ -60,14 +57,6 @@ public class ChallengeSessionEntity {
 
     public void setUserId(String userId) {
         this.userId = userId;
-    }
-
-    public boolean isVerified() {
-        return verified;
-    }
-
-    public void setVerified(boolean verified) {
-        this.verified = verified;
     }
 
     public OffsetDateTime getCreatedAt() {

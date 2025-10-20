@@ -4,16 +4,13 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import org.clevercastle.authforge.core.UserState;
+import org.clevercastle.authforge.core.user.UserState;
 
 import java.time.OffsetDateTime;
-import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -24,20 +21,14 @@ public class UserEntity {
     private String userId;
 
     @Enumerated(EnumType.STRING)
-    @Column
-    private UserState userState;
+    @Column(name = "user_state")
+    private UserState state;
 
     @Column
     private String hashedPassword;
 
-    @Column
-    private String resetPasswordCode;
-
-    @Column
-    private OffsetDateTime resetPasswordCodeExpiredAt;
-
-    @OneToMany(mappedBy = "userId", fetch = FetchType.LAZY)
-    private List<UserLoginItemEntity> userLoginItems;
+    // Relationship is managed at database level via FK with ON DELETE CASCADE.
+    // Avoid JPA association here to keep mapping simple for tests.
 
     @Column
     private OffsetDateTime createdAt;
@@ -66,12 +57,12 @@ public class UserEntity {
         this.userId = userId;
     }
 
-    public UserState getUserState() {
-        return userState;
+    public UserState getState() {
+        return state;
     }
 
-    public void setUserState(UserState userState) {
-        this.userState = userState;
+    public void setState(UserState state) {
+        this.state = state;
     }
 
     public String getHashedPassword() {
@@ -80,30 +71,6 @@ public class UserEntity {
 
     public void setHashedPassword(String hashedPassword) {
         this.hashedPassword = hashedPassword;
-    }
-
-    public String getResetPasswordCode() {
-        return resetPasswordCode;
-    }
-
-    public void setResetPasswordCode(String resetPasswordCode) {
-        this.resetPasswordCode = resetPasswordCode;
-    }
-
-    public OffsetDateTime getResetPasswordCodeExpiredAt() {
-        return resetPasswordCodeExpiredAt;
-    }
-
-    public void setResetPasswordCodeExpiredAt(OffsetDateTime resetPasswordCodeExpiredAt) {
-        this.resetPasswordCodeExpiredAt = resetPasswordCodeExpiredAt;
-    }
-
-    public List<UserLoginItemEntity> getUserLoginItems() {
-        return userLoginItems;
-    }
-
-    public void setUserLoginItems(List<UserLoginItemEntity> userLoginItems) {
-        this.userLoginItems = userLoginItems;
     }
 
     public OffsetDateTime getCreatedAt() {

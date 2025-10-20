@@ -1,7 +1,7 @@
 package org.clevercastle.authforge.impl.postgres.repository;
 
+import org.clevercastle.authforge.core.challenge.ChallengeSession;
 import org.clevercastle.authforge.core.exception.CastleException;
-import org.clevercastle.authforge.core.model.ChallengeSession;
 import org.clevercastle.authforge.core.repository.ChallengeSessionRepository;
 import org.clevercastle.authforge.impl.postgres.entity.ChallengeSessionEntity;
 import org.clevercastle.authforge.impl.postgres.mapper.ChallengeSessionMapper;
@@ -36,20 +36,6 @@ public class PostgresChallengeSessionRepository implements ChallengeSessionRepos
             throw e;
         } catch (Exception e) {
             throw new CastleException("Failed to get challenge session by id: " + e.getMessage(), e);
-        }
-    }
-
-    @Override
-    public void markVerified(String id) throws CastleException {
-        try {
-            int updated = challengeSessionJpaRepository.markVerified(id);
-            if (updated == 0) {
-                throw new CastleException("Challenge session not found with id: " + id);
-            }
-        } catch (CastleException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new CastleException("Failed to mark challenge session as verified: " + e.getMessage(), e);
         }
     }
 

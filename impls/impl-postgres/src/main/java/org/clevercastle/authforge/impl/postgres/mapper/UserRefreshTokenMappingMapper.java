@@ -1,6 +1,6 @@
 package org.clevercastle.authforge.impl.postgres.mapper;
 
-import org.clevercastle.authforge.core.model.UserRefreshTokenMapping;
+import org.clevercastle.authforge.core.token.UserRefreshTokenMapping;
 import org.clevercastle.authforge.impl.postgres.entity.UserRefreshTokenMappingEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;

@@ -44,14 +44,14 @@ public class OtpServiceImpl implements OtpService {
 
     @Override
     public OneTimePasswordDto requestOneTimePassword(String loginIdentifier) throws CastleException {
-        Pair<User, UserLoginItem> pair = userAuthService.getByLoginIdentifier(loginIdentifier);
+        Pair<User, UserLoginItem> pair = userAuthService.getRawLoginItemByLoginIdentifier(loginIdentifier);
         if (pair.getLeft() == null || pair.getRight() == null) {
             throw new UserNotFoundException();
         }
-        if (UserLoginItem.State.ACTIVE != pair.getRight().getState()) {
+        if (UserLoginItem.State.active != pair.getRight().getState()) {
             throw new CastleException("Current login is not confirmed");
         }
-        if (UserState.ACTIVE != pair.getLeft().getUserState()) {
+        if (UserState.active != pair.getLeft().getState()) {
             throw new CastleException("The user is not confirmed");
         }
         OneTimePassword oneTimePassword = new OneTimePassword();
@@ -73,14 +73,14 @@ public class OtpServiceImpl implements OtpService {
         if (!oneTimePasswordRepository.verifyOneTimePassword(loginIdentifier, oneTimePassword)) {
             throw new CastleException();
         }
-        Pair<User, UserLoginItem> pair = userAuthService.getByLoginIdentifier(loginIdentifier);
+        Pair<User, UserLoginItem> pair = userAuthService.getRawLoginItemByLoginIdentifier(loginIdentifier);
         if (pair.getLeft() == null || pair.getRight() == null) {
             throw new UserNotFoundException();
         }
-        if (UserLoginItem.State.ACTIVE != pair.getRight().getState()) {
+        if (UserLoginItem.State.active != pair.getRight().getState()) {
             throw new CastleException("Current login is not confirmed");
         }
-        if (UserState.ACTIVE != pair.getLeft().getUserState()) {
+        if (UserState.active != pair.getLeft().getState()) {
             throw new CastleException("The user is not confirmed");
         }
         var userWithToken = tokenManager.generateToken(pair.getLeft(), pair.getRight(), application);

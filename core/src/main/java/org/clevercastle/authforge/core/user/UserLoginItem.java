@@ -3,39 +3,40 @@ package org.clevercastle.authforge.core.user;
 import java.time.OffsetDateTime;
 
 /**
- *  one user may have a lot of login solution
- *  raw: username + password / email + password / mobile + password
- *  sso login: github / google / apple
- *  oauth2: the 3rd party oauth2 login ( not include sso login )
- *
- *  when the user register, it should automatically create a login item & create the corresponding user
+ * Represents a user's authentication method (email, phone, OAuth provider).
+ * Each authentication method (email/password, Google OAuth, phone number)
+ * is stored as a separate login item.
+ * Type categories:
+ *   - raw: Traditional username/password authentication (email+password, phone+password)
+ *   - sso: Public OAuth/OIDC providers (Google, GitHub, Apple, Facebook, Microsoft)
+ *   - enterprise_sso: Enterprise identity providers (Azure AD, Okta, SAML-based SSO)
  */
 public class UserLoginItem {
     public enum Type {
         raw,
         sso,
-        oauth2
+        enterprise_sso
     }
 
     public enum State {
-        UNCONFIRMED,
-        ACTIVE,
+        unconfirmed,
+        active,
+        disabled
     }
 
+    /**
+     * loginIdentifier+loginIdentifierType uniquely identifies a login item
+     */
     private String loginIdentifier;
-    private String loginIdentifierPrefix;
+    private String loginIdentifierType;
     private Type type;
+    private String ssoSub;
     private String userSub;
     private String userId;
     private State state;
 
-    // used for login item verification (loginType == raw)
-    private String verificationCode;
-    private OffsetDateTime verificationCodeExpiredAt;
-
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;
-
 
     public String getLoginIdentifier() {
         return loginIdentifier;
@@ -45,12 +46,12 @@ public class UserLoginItem {
         this.loginIdentifier = loginIdentifier;
     }
 
-    public String getLoginIdentifierPrefix() {
-        return loginIdentifierPrefix;
+    public String getLoginIdentifierType() {
+        return loginIdentifierType;
     }
 
-    public void setLoginIdentifierPrefix(String loginIdentifierPrefix) {
-        this.loginIdentifierPrefix = loginIdentifierPrefix;
+    public void setLoginIdentifierType(String loginIdentifierType) {
+        this.loginIdentifierType = loginIdentifierType;
     }
 
     public Type getType() {
@@ -59,6 +60,14 @@ public class UserLoginItem {
 
     public void setType(Type type) {
         this.type = type;
+    }
+
+    public String getSsoSub() {
+        return ssoSub;
+    }
+
+    public void setSsoSub(String ssoSub) {
+        this.ssoSub = ssoSub;
     }
 
     public String getUserSub() {
@@ -83,22 +92,6 @@ public class UserLoginItem {
 
     public void setState(State state) {
         this.state = state;
-    }
-
-    public String getVerificationCode() {
-        return verificationCode;
-    }
-
-    public void setVerificationCode(String verificationCode) {
-        this.verificationCode = verificationCode;
-    }
-
-    public OffsetDateTime getVerificationCodeExpiredAt() {
-        return verificationCodeExpiredAt;
-    }
-
-    public void setVerificationCodeExpiredAt(OffsetDateTime verificationCodeExpiredAt) {
-        this.verificationCodeExpiredAt = verificationCodeExpiredAt;
     }
 
     public OffsetDateTime getCreatedAt() {

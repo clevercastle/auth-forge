@@ -4,7 +4,7 @@ dependencies {
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.19.2")
 
     implementation("javax.persistence:javax.persistence-api:2.2")
-    implementation("jakarta.persistence:jakarta.persistence-api:3.2.0")
+    implementation("jakarta.persistence:jakarta.persistence-api:3.1.0")
 
     implementation("javax.transaction:javax.transaction-api:1.3")
     implementation("jakarta.transaction:jakarta.transaction-api:2.0.1")

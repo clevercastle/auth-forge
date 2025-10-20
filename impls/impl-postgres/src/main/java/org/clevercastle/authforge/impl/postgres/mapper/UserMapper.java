@@ -1,6 +1,6 @@
 package org.clevercastle.authforge.impl.postgres.mapper;
 
-import org.clevercastle.authforge.core.model.User;
+import org.clevercastle.authforge.core.user.User;
 import org.clevercastle.authforge.impl.postgres.entity.UserEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;

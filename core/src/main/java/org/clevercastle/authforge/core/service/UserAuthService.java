@@ -12,11 +12,19 @@ import org.clevercastle.authforge.core.user.UserWithToken;
 public interface UserAuthService {
     User register(UserRegisterRequest request) throws CastleException;
 
+
     void verify(String loginIdentifier, String verificationCode) throws CastleException;
 
     UserWithToken login(Application application, String loginIdentifier, String password) throws CastleException;
 
-    Pair<User, UserLoginItem> getByLoginIdentifier(String loginIdentifier) throws CastleException;
+    Pair<User, UserLoginItem> getByLoginIdentifier(String loginIdentifier, String loginIdentifierType) throws CastleException;
+
+    /**
+     * @param loginIdentifier the loginItemType must be raw, e.g., email, phone, etc.
+     *                        For the raw type, the loginIdentifier is unique
+     * @throws CastleException
+     */
+    Pair<User, UserLoginItem> getRawLoginItemByLoginIdentifier(String loginIdentifier) throws CastleException;
 
     Pair<User, UserLoginItem> getByUserSub(String userSub) throws CastleException;
 

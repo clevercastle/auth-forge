@@ -8,7 +8,5 @@ public interface ChallengeSessionRepository {
 
     ChallengeSession getById(String id) throws CastleException;
 
-    void markVerified(String id) throws CastleException;
-
     void delete(String id) throws CastleException;
 }

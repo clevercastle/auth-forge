@@ -1,13 +1,14 @@
 package org.clevercastle.authforge.impl.postgres.repository;
 
 import org.clevercastle.authforge.core.exception.CastleException;
-import org.clevercastle.authforge.core.model.UserLoginItem;
 import org.clevercastle.authforge.core.repository.UserLoginItemRepository;
+import org.clevercastle.authforge.core.user.UserLoginItem;
 import org.clevercastle.authforge.impl.postgres.entity.UserLoginItemEntity;
 import org.clevercastle.authforge.impl.postgres.mapper.UserLoginItemMapper;
 import org.clevercastle.authforge.impl.postgres.repository.jpa.UserLoginItemJpaRepository;
 import org.springframework.data.jpa.repository.support.JpaRepositoryFactory;
 
+import java.util.List;
 import java.util.Optional;
 
 public class PostgresLoginItemRepository implements UserLoginItemRepository {
@@ -19,11 +20,11 @@ public class PostgresLoginItemRepository implements UserLoginItemRepository {
     }
 
     @Override
-    public void confirmLoginItem(String loginIdentifier) throws CastleException {
+    public void confirmLoginItem(String userSub) throws CastleException {
         try {
-            int updated = userLoginItemJpaRepository.confirmLoginItem(loginIdentifier);
+            int updated = userLoginItemJpaRepository.confirmLoginItem(userSub);
             if (updated == 0) {
-                throw new CastleException("No login item found with identifier: " + loginIdentifier);
+                throw new CastleException("No login item found with the userSub: " + userSub);
             }
         } catch (CastleException e) {
             throw e;
@@ -44,13 +45,19 @@ public class PostgresLoginItemRepository implements UserLoginItemRepository {
     }
 
     @Override
-    public UserLoginItem getByLoginIdentifier(String loginIdentifier) throws CastleException {
+    public UserLoginItem getByLoginIdentifier(String loginIdentifier, String loginIdentifierType) throws CastleException {
         try {
-            Optional<UserLoginItemEntity> entity = userLoginItemJpaRepository.findById(loginIdentifier);
+            Optional<UserLoginItemEntity> entity = userLoginItemJpaRepository
+                    .findByLoginIdentifierAndLoginIdentifierType(loginIdentifier, loginIdentifierType);
             return entity.map(UserLoginItemMapper.INSTANCE::toModel).orElse(null);
         } catch (Exception e) {
             throw new CastleException("Failed to get login item by identifier: " + e.getMessage(), e);
         }
+    }
+
+    @Override
+    public List<UserLoginItem> listByLoginIdentifier(String loginIdentifier) throws CastleException {
+        return List.of();
     }
 
     @Override

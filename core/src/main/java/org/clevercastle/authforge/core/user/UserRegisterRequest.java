@@ -2,7 +2,8 @@ package org.clevercastle.authforge.core.user;
 
 public class UserRegisterRequest {
     private String loginIdentifier;
-    private String loginIdentifierPrefix;
+    // must be one of: email/phone
+    private String loginIdentifierType;
     private String password;
 
     public String getLoginIdentifier() {
@@ -13,12 +14,12 @@ public class UserRegisterRequest {
         this.loginIdentifier = loginIdentifier;
     }
 
-    public String getLoginIdentifierPrefix() {
-        return loginIdentifierPrefix;
+    public String getLoginIdentifierType() {
+        return loginIdentifierType;
     }
 
-    public void setLoginIdentifierPrefix(String loginIdentifierPrefix) {
-        this.loginIdentifierPrefix = loginIdentifierPrefix;
+    public void setLoginIdentifierType(String loginIdentifierType) {
+        this.loginIdentifierType = loginIdentifierType;
     }
 
     public String getPassword() {

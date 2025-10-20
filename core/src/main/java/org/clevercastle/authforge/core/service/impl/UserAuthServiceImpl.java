@@ -2,8 +2,8 @@ package org.clevercastle.authforge.core.service.impl;
 
 import jakarta.annotation.Nonnull;
 import jakarta.transaction.Transactional;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.tuple.Pair;
 import org.clevercastle.authforge.core.Application;
 import org.clevercastle.authforge.core.Config;
@@ -24,16 +24,20 @@ import org.clevercastle.authforge.core.user.UserLoginItem;
 import org.clevercastle.authforge.core.user.UserRegisterRequest;
 import org.clevercastle.authforge.core.user.UserState;
 import org.clevercastle.authforge.core.user.UserWithToken;
-import org.clevercastle.authforge.core.util.CodeUtil;
 import org.clevercastle.authforge.core.util.HashUtil;
 import org.clevercastle.authforge.core.util.IdUtil;
 import org.clevercastle.authforge.core.util.TimeUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class UserAuthServiceImpl implements UserAuthService {
+    private static final Logger log = LoggerFactory.getLogger(UserAuthServiceImpl.class);
     private final Config config;
     private final UserRepository userModelRepository;
     private final UserLoginItemRepository loginItemRepository;
@@ -61,10 +65,10 @@ public class UserAuthServiceImpl implements UserAuthService {
     @Override
     @Transactional
     public User register(UserRegisterRequest userRegisterRequest) throws CastleException {
-        Pair<User, UserLoginItem> pair = this.getByLoginIdentifier(userRegisterRequest.getLoginIdentifier());
+        Pair<User, UserLoginItem> pair = this.getByLoginIdentifier(userRegisterRequest.getLoginIdentifier(), userRegisterRequest.getLoginIdentifierType());
         User user = pair.getLeft();
         if (user != null) {
-            if (UserState.DELETED != user.getUserState()) {
+            if (UserState.deleted != user.getState()) {
                 throw new UserExistException();
             }
         }
@@ -72,7 +76,7 @@ public class UserAuthServiceImpl implements UserAuthService {
         var now = TimeUtils.now();
         user = new User();
         user.setUserId(userId);
-        user.setUserState(UserState.ACTIVE);
+        user.setState(UserState.active);
         user.setHashedPassword(HashUtil.hashPassword(userRegisterRequest.getPassword()));
         user.setCreatedAt(now);
         user.setUpdatedAt(now);
@@ -82,15 +86,13 @@ public class UserAuthServiceImpl implements UserAuthService {
         userLoginItem.setUserSub(UUID.randomUUID().toString());
         userLoginItem.setType(UserLoginItem.Type.raw);
         userLoginItem.setLoginIdentifier(userRegisterRequest.getLoginIdentifier());
-        userLoginItem.setLoginIdentifierPrefix(userRegisterRequest.getLoginIdentifierPrefix());
-        userLoginItem.setState(UserLoginItem.State.UNCONFIRMED);
-        userLoginItem.setVerificationCode(CodeUtil.generateCode(8));
-        userLoginItem.setVerificationCodeExpiredAt(TimeUtils.now().plusSeconds(this.config.getVerificationCodeExpireTime()));
+        userLoginItem.setLoginIdentifierType(userRegisterRequest.getLoginIdentifierType());
+        userLoginItem.setState(UserLoginItem.State.unconfirmed);
         userLoginItem.setCreatedAt(now);
         userLoginItem.setUpdatedAt(now);
         userModelRepository.save(user);
         loginItemRepository.save(userLoginItem);
-        this.codeSender.sendVerificationCode(userLoginItem.getLoginIdentifier(), userLoginItem.getVerificationCode());
+        // todo send the verification code
         return user;
     }
 
@@ -98,38 +100,33 @@ public class UserAuthServiceImpl implements UserAuthService {
     @javax.transaction.Transactional
     @Transactional
     public void verify(String loginIdentifier, String verificationCode) throws CastleException {
-        Pair<User, UserLoginItem> pair = this.getByLoginIdentifier(loginIdentifier);
+        Pair<User, UserLoginItem> pair = this.getRawLoginItemByLoginIdentifier(loginIdentifier);
         // if not found, return
         if (pair.getLeft() == null || pair.getRight() == null) {
             throw new UserNotFoundException();
         }
         var userLoginItem = pair.getRight();
-        if (UserLoginItem.State.ACTIVE == userLoginItem.getState()) {
+        if (UserLoginItem.State.active == userLoginItem.getState()) {
             throw new CastleException();
         }
-        if (userLoginItem.getVerificationCodeExpiredAt() == null || userLoginItem.getVerificationCodeExpiredAt().isBefore(TimeUtils.now())) {
-            throw new CastleException();
-        }
-        if (Strings.CS.equals(verificationCode, userLoginItem.getVerificationCode())) {
-            loginItemRepository.confirmLoginItem(loginIdentifier);
-        } else {
-            throw new CastleException();
-        }
+        // todo check code
+        throw new NotImplementedException();
+
     }
 
     @Override
     @Transactional
     public UserWithToken login(Application application, String loginIdentifier, String password) throws CastleException {
-        Pair<User, UserLoginItem> pair = getByLoginIdentifier(loginIdentifier);
+        Pair<User, UserLoginItem> pair = this.getRawLoginItemByLoginIdentifier(loginIdentifier);
         var user = pair.getLeft();
         var userLoginItem = pair.getRight();
         if (user == null) {
             throw new UserNotFoundException();
         }
-        if (UserLoginItem.State.ACTIVE != userLoginItem.getState()) {
+        if (UserLoginItem.State.active != userLoginItem.getState()) {
             throw new CastleException("Current login is not confirmed");
         }
-        if (UserState.ACTIVE != user.getUserState()) {
+        if (UserState.active != user.getState()) {
             throw new CastleException("");
         }
         boolean verify = HashUtil.verifyPassword(password, user.getHashedPassword());
@@ -144,10 +141,10 @@ public class UserAuthServiceImpl implements UserAuthService {
 
     @Nonnull
     @Override
-    public Pair<User, UserLoginItem> getByLoginIdentifier(String loginIdentifier) throws CastleException {
+    public Pair<User, UserLoginItem> getByLoginIdentifier(String loginIdentifier, String loginIdentifierType) throws CastleException {
         try {
             // Get login item first
-            UserLoginItem loginItem = loginItemRepository.getByLoginIdentifier(loginIdentifier);
+            UserLoginItem loginItem = loginItemRepository.getByLoginIdentifier(loginIdentifier, loginIdentifierType);
             if (loginItem == null) {
                 return Pair.of(null, null);
             }
@@ -159,6 +156,27 @@ public class UserAuthServiceImpl implements UserAuthService {
             throw e;
         } catch (Exception e) {
             throw new CastleException("Failed to get user identity by login identifier: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public Pair<User, UserLoginItem> getRawLoginItemByLoginIdentifier(String loginIdentifier) throws CastleException {
+        try {
+            List<UserLoginItem> loginItems = loginItemRepository.listByLoginIdentifier(loginIdentifier);
+            loginItems = loginItems.stream().filter(it -> UserLoginItem.Type.raw.equals(it.getType()))
+                    .collect(Collectors.toList());
+            if (loginItems.isEmpty()) {
+                throw new CastleException();
+            }
+            if (loginItems.size() >= 2) {
+                log.error("Multiple login items found for loginIdentifier: {}", loginIdentifier);
+                throw new CastleException();
+            }
+            UserLoginItem loginItem = loginItems.get(0);
+            User user = userModelRepository.getByUserId(loginItem.getUserId());
+            return Pair.of(user, loginItem);
+        } catch (Exception e) {
+            throw new CastleException();
         }
     }
 
@@ -201,7 +219,8 @@ public class UserAuthServiceImpl implements UserAuthService {
         if (StringUtils.isBlank(oauth2User.getLoginIdentifier())) {
             throw new CastleException();
         }
-        Pair<User, UserLoginItem> pair = getByLoginIdentifier(oauth2User.getLoginIdentifier());
+        // todo
+        Pair<User, UserLoginItem> pair = getByLoginIdentifier(oauth2User.getLoginIdentifier(), clientConfig.getClientId());
         var user = pair.getLeft();
         var userLoginItem = pair.getRight();
         if (userLoginItem == null) {
@@ -210,7 +229,7 @@ public class UserAuthServiceImpl implements UserAuthService {
             var now = TimeUtils.now();
             user = new User();
             user.setUserId(userId);
-            user.setUserState(UserState.ACTIVE);
+            user.setState(UserState.active);
             user.setCreatedAt(now);
             user.setUpdatedAt(now);
 
@@ -228,7 +247,7 @@ public class UserAuthServiceImpl implements UserAuthService {
             return userWithToken;
         } else {
             // login process
-            if (user == null || UserState.ACTIVE != user.getUserState()) {
+            if (user == null || UserState.active != user.getState()) {
                 throw new CastleException("");
             }
             var userWithToken = tokenManager.generateToken(user, userLoginItem, application);
