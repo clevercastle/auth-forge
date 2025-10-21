@@ -1,6 +1,7 @@
 package org.clevercastle.authforge.core.codesender;
 
 import org.clevercastle.authforge.core.exception.CastleException;
+import org.clevercastle.authforge.core.verificationcode.VerificationCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,7 +12,7 @@ public class DummyCodeSender implements CodeSender {
     }
 
     @Override
-    public void sendVerificationCode(String loginIdentifier, String loginIdentifierType, String verificationCode) throws CastleException {
+    public void sendVerificationCode(VerificationCode.Type type, String loginIdentifier, String loginIdentifierType, String verificationCode) throws CastleException {
         logger.info("verification code is: {}", verificationCode);
 
     }

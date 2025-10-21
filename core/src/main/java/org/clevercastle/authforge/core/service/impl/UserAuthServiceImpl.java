@@ -98,7 +98,7 @@ public class UserAuthServiceImpl implements UserAuthService {
         userModelRepository.save(user);
         loginItemRepository.save(userLoginItem);
         VerificationCode verificationCode = verificationCodeService.createVerificationCode(VerificationCode.Type.confirmLoginIdentifier, userLoginItem.getLoginIdentifier(), config.getVerificationCodeExpireTime());
-        codeSender.sendVerificationCode(userLoginItem.getLoginIdentifier(), userLoginItem.getLoginIdentifierType(), verificationCode.getCode());
+        codeSender.sendVerificationCode(VerificationCode.Type.confirmLoginIdentifier, userLoginItem.getLoginIdentifier(), userLoginItem.getLoginIdentifierType(), verificationCode.getCode());
         return user;
     }
 
@@ -151,7 +151,8 @@ public class UserAuthServiceImpl implements UserAuthService {
         VerificationCode verificationCode = verificationCodeService
                 .createVerificationCode(VerificationCode.Type.confirmLoginIdentifier, userLoginItem.getLoginIdentifier(),
                         config.getVerificationCodeExpireTime());
-        codeSender.sendVerificationCode(userLoginItem.getLoginIdentifier(), userLoginItem.getLoginIdentifierType(), verificationCode.getCode());
+        codeSender.sendVerificationCode(VerificationCode.Type.confirmLoginIdentifier, userLoginItem.getLoginIdentifier(),
+                userLoginItem.getLoginIdentifierType(), verificationCode.getCode());
     }
 
 

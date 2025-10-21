@@ -4,7 +4,6 @@ import org.clevercastle.authforge.core.Config;
 import org.clevercastle.authforge.core.DummyCacheServiceImpl;
 import org.clevercastle.authforge.core.codesender.CodeSender;
 import org.clevercastle.authforge.core.codesender.DummyCodeSender;
-import org.clevercastle.authforge.core.repository.OneTimePasswordRepository;
 import org.clevercastle.authforge.core.repository.RefreshTokenRepository;
 import org.clevercastle.authforge.core.repository.UserLoginItemRepository;
 import org.clevercastle.authforge.core.repository.UserRepository;
@@ -118,13 +117,13 @@ public class Beans {
 
     @Bean
     public OtpService otpService(Config config,
-                                 OneTimePasswordRepository oneTimePasswordRepository,
                                  TokenManager tokenManager,
                                  CodeSender codeSender,
                                  RefreshTokenRepository refreshTokenRepository,
-                                 UserAuthService userAuthService) {
-        return new OtpServiceImpl(config, oneTimePasswordRepository, tokenManager,
-                codeSender, refreshTokenRepository, userAuthService);
+                                 UserAuthService userAuthService,
+                                 VerificationCodeService verificationCodeService) {
+        return new OtpServiceImpl(config, tokenManager, codeSender, refreshTokenRepository, userAuthService,
+                verificationCodeService);
     }
 
     @Bean

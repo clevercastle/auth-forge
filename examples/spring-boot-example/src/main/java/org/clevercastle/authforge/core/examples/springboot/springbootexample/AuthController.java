@@ -9,7 +9,6 @@ import org.clevercastle.authforge.core.exception.CastleException;
 import org.clevercastle.authforge.core.oauth2.Oauth2ClientConfig;
 import org.clevercastle.authforge.core.oauth2.github.GithubOauth2ExchangeService;
 import org.clevercastle.authforge.core.oauth2.oidc.OidcExchangeService;
-import org.clevercastle.authforge.core.otp.OneTimePasswordDto;
 import org.clevercastle.authforge.core.service.OtpService;
 import org.clevercastle.authforge.core.service.TokenManager;
 import org.clevercastle.authforge.core.service.UserAuthService;
@@ -163,8 +162,8 @@ public class AuthController {
     }
 
     @GetMapping("auth/one-time-password")
-    public OneTimePasswordDto requestOneTimePassword(@RequestParam String email) throws CastleException {
-        return otpService.requestOneTimePassword(email);
+    public void requestOneTimePassword(@RequestParam String email) throws CastleException {
+        otpService.requestOneTimePassword(email);
     }
 
     @PostMapping("auth/one-time-password")
@@ -172,3 +171,4 @@ public class AuthController {
         return otpService.verifyOneTimePassword(application, request.getEmail(), request.getOneTimePassword());
     }
 }
+

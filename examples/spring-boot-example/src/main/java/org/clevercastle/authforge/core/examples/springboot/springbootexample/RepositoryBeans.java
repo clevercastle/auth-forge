@@ -2,7 +2,6 @@ package org.clevercastle.authforge.core.examples.springboot.springbootexample;
 
 import jakarta.persistence.EntityManager;
 import org.clevercastle.authforge.core.repository.ChallengeSessionRepository;
-import org.clevercastle.authforge.core.repository.OneTimePasswordRepository;
 import org.clevercastle.authforge.core.repository.RefreshTokenRepository;
 import org.clevercastle.authforge.core.repository.UserHmacSecretRepository;
 import org.clevercastle.authforge.core.repository.UserLoginItemRepository;
@@ -10,7 +9,6 @@ import org.clevercastle.authforge.core.repository.UserRepository;
 import org.clevercastle.authforge.core.repository.VerificationCodeRepository;
 import org.clevercastle.authforge.impl.postgres.repository.PostgresChallengeSessionRepository;
 import org.clevercastle.authforge.impl.postgres.repository.PostgresLoginItemRepository;
-import org.clevercastle.authforge.impl.postgres.repository.PostgresOneTimePasswordRepository;
 import org.clevercastle.authforge.impl.postgres.repository.PostgresRefreshTokenRepository;
 import org.clevercastle.authforge.impl.postgres.repository.PostgresUserHmacSecretRepository;
 import org.clevercastle.authforge.impl.postgres.repository.PostgresUserModelRepository;
@@ -38,12 +36,6 @@ public class RepositoryBeans {
     public RefreshTokenRepository refreshTokenRepository(EntityManager entityManager) {
         JpaRepositoryFactory jpaRepositoryFactory = new JpaRepositoryFactory(entityManager);
         return new PostgresRefreshTokenRepository(jpaRepositoryFactory);
-    }
-
-    @Bean
-    public OneTimePasswordRepository oneTimePasswordRepository(EntityManager entityManager) {
-        JpaRepositoryFactory jpaRepositoryFactory = new JpaRepositoryFactory(entityManager);
-        return new PostgresOneTimePasswordRepository(jpaRepositoryFactory);
     }
 
     @Bean

@@ -1,0 +1,13 @@
+- [x] email+password registration
+- [x] confirm the email
+- [x] resend the confirmation code
+- [x] email+password login
+- [x] login with one time password
+- [ ] anonymous reset password
+- [ ] user change password
+- [ ] admin reset password
+- [ ] admin change password
+- [ ] castle exceptions
+- [ ] setup mfa (authenticator app)
+- [ ] verify mfa (authenticator app)
+- [ ] challenge session

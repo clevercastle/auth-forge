@@ -5,7 +5,8 @@ import java.time.OffsetDateTime;
 public class VerificationCode {
     public static enum Type {
         resetPassword,
-        confirmLoginIdentifier;
+        confirmLoginIdentifier,
+        oneTimePassword;
     }
 
     private String code;
