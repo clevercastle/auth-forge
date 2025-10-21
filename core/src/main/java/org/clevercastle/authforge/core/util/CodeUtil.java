@@ -5,6 +5,7 @@ import java.util.Random;
 public class CodeUtil {
     public static final String UPPER_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     public static final String FULL_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz";
+    public static final String FULL_CHARS_INCLUDE_SPECIAL = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz!@#$%^&*";
     private static final Random RANDOM = new Random();
 
     private CodeUtil() {

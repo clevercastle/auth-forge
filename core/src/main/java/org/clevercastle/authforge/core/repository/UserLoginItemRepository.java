@@ -16,4 +16,6 @@ public interface UserLoginItemRepository {
     List<UserLoginItem> listByLoginIdentifier(String loginIdentifier) throws CastleException;
 
     UserLoginItem getByUserSub(String userSub) throws CastleException;
+
+    List<UserLoginItem> deleteByUserId(String userId) throws CastleException;
 }

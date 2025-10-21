@@ -71,4 +71,24 @@ public class PostgresLoginItemRepository implements UserLoginItemRepository {
             throw new CastleException("Failed to get login item by userSub: " + e.getMessage(), e);
         }
     }
+
+    @Override
+    public List<UserLoginItem> deleteByUserId(String userId) throws CastleException {
+        try {
+            // Get all login items for the user before deleting
+            List<UserLoginItemEntity> entities = userLoginItemJpaRepository.findByUserId(userId);
+
+            // Convert to model objects
+            List<UserLoginItem> loginItems = entities.stream()
+                    .map(UserLoginItemMapper.INSTANCE::toModel)
+                    .toList();
+
+            // Delete all login items for this user
+            userLoginItemJpaRepository.deleteByUserId(userId);
+
+            return loginItems;
+        } catch (Exception e) {
+            throw new CastleException("Failed to delete login items for userId: " + e.getMessage(), e);
+        }
+    }
 }

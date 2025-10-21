@@ -22,4 +22,10 @@ public interface UserLoginItemJpaRepository extends JpaRepository<UserLoginItemE
     @Modifying
     @Query("UPDATE UserLoginItemEntity u SET u.state = :state WHERE u.userSub = :userSub")
     int updateState(@Param("userSub") String userSub, @Param("state") UserLoginItem.State state);
+
+    List<UserLoginItemEntity> findByUserId(String userId);
+
+    @Modifying
+    @Query("DELETE FROM UserLoginItemEntity u WHERE u.userId = :userId")
+    int deleteByUserId(@Param("userId") String userId);
 }

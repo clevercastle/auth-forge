@@ -10,5 +10,7 @@ public interface UserRepository {
     User getByUserId(String userId) throws CastleException;
 
     User patch(String userId, PatchUserRequest request) throws CastleException;
+
+    User delete(String userId) throws CastleException;
 }
 

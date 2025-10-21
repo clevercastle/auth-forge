@@ -43,6 +43,49 @@ public class PostgresUserModelRepository implements UserRepository {
 
     @Override
     public User patch(String userId, PatchUserRequest request) throws CastleException {
-        return null;
+        try {
+            UserEntity entity = userJpaRepository.findById(userId)
+                    .orElseThrow(() -> new CastleException("User not found with id: " + userId));
+
+            // Only update fields that are not null in the request
+            if (request.getState() != null) {
+                entity.setState(org.clevercastle.authforge.core.user.UserState.valueOf(request.getState()));
+            }
+
+            if (request.getHashedPassword() != null) {
+                entity.setHashedPassword(request.getHashedPassword());
+            }
+
+            // Always update the updatedAt timestamp
+            entity.setUpdatedAt(java.time.OffsetDateTime.now());
+
+            // todo optimistic locking
+            UserEntity updatedEntity = userJpaRepository.save(entity);
+            return UserMapper.INSTANCE.toModel(updatedEntity);
+        } catch (CastleException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new CastleException("Failed to patch user: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public User delete(String userId) throws CastleException {
+        try {
+            // Get the user before deleting to return it
+            UserEntity entity = userJpaRepository.findById(userId)
+                    .orElseThrow(() -> new CastleException("User not found with id: " + userId));
+
+            User user = UserMapper.INSTANCE.toModel(entity);
+
+            // Delete the user
+            userJpaRepository.deleteById(userId);
+
+            return user;
+        } catch (CastleException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new CastleException("Failed to delete user: " + e.getMessage(), e);
+        }
     }
 }
