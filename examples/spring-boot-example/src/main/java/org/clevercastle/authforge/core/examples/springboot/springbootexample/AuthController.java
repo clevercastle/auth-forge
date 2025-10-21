@@ -4,18 +4,19 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.clevercastle.authforge.core.UserRegisterRequest;
-import org.clevercastle.authforge.core.UserWithToken;
-import org.clevercastle.authforge.core.dto.OneTimePasswordDto;
+import org.clevercastle.authforge.core.Application;
 import org.clevercastle.authforge.core.exception.CastleException;
-import org.clevercastle.authforge.core.model.User;
-import org.clevercastle.authforge.core.model.UserLoginItem;
 import org.clevercastle.authforge.core.oauth2.Oauth2ClientConfig;
 import org.clevercastle.authforge.core.oauth2.github.GithubOauth2ExchangeService;
 import org.clevercastle.authforge.core.oauth2.oidc.OidcExchangeService;
+import org.clevercastle.authforge.core.otp.OneTimePasswordDto;
 import org.clevercastle.authforge.core.service.OtpService;
-import org.clevercastle.authforge.core.service.TokenSessionService;
+import org.clevercastle.authforge.core.service.TokenManager;
 import org.clevercastle.authforge.core.service.UserAuthService;
+import org.clevercastle.authforge.core.user.User;
+import org.clevercastle.authforge.core.user.UserLoginItem;
+import org.clevercastle.authforge.core.user.UserRegisterRequest;
+import org.clevercastle.authforge.core.user.UserWithToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,9 +27,16 @@ import org.springframework.web.bind.annotation.RestController;
 import java.text.ParseException;
 import java.util.Base64;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 public class AuthController {
+    private final Application application = new Application();
+
+    {
+        application.setClientId(UUID.randomUUID().toString());
+    }
+
     private static final Oauth2ClientConfig googleClientConfig = Oauth2ClientConfig.builder()
             .uniqueId("google")
             .oauth2ExchangeService(new OidcExchangeService())
@@ -85,16 +93,16 @@ public class AuthController {
     @PostMapping("auth/register")
     public User register(@RequestBody RegisterRequest request) throws CastleException {
         UserRegisterRequest userRegisterRequest = new UserRegisterRequest();
-        userRegisterRequest.setLoginIdentifier("email#" + request.getEmail());
+        userRegisterRequest.setLoginIdentifier(request.getEmail());
         userRegisterRequest.setPassword(request.getPassword());
-        userRegisterRequest.setLoginIdentifierPrefix("email");
+        userRegisterRequest.setLoginIdentifierType("email");
         return userAuthService.register(userRegisterRequest);
     }
 
 
     @GetMapping("auth/verify")
     public UserWithToken verify(@RequestParam String email, @RequestParam String verificationCode) throws CastleException {
-        userAuthService.verify("email#" + email, verificationCode);
+        userAuthService.verify(email, verificationCode);
         return null;
     }
 
@@ -104,9 +112,9 @@ public class AuthController {
         authorization = authorization.replace("Basic ", "");
         // base64 decode
         String[] credentials = new String(Base64.getDecoder().decode(authorization)).split(":");
-        String loginIdentifier = "email#" + credentials[0];
+        String loginIdentifier = credentials[0];
         String password = credentials[1];
-        return userAuthService.login(loginIdentifier, password);
+        return userAuthService.login(application, loginIdentifier, password);
     }
 
     @GetMapping("auth/refresh")
@@ -123,7 +131,7 @@ public class AuthController {
         if (pair.getLeft() == null || pair.getRight() == null) {
             throw new CastleException("<UNK>");
         }
-        return tokenSessionService.refresh(pair.getLeft(), pair.getRight(), refreshToken.getRefreshToken());
+        return tokenSessionService.refresh(pair.getLeft(), pair.getRight(), application, refreshToken.getRefreshToken());
     }
 
     @GetMapping("auth/sso/url")
@@ -142,20 +150,20 @@ public class AuthController {
     public UserWithToken exchange(@RequestParam SsoType ssoType, @RequestParam String code, @RequestParam String state, @RequestParam String redirectUrl) throws CastleException {
         switch (ssoType) {
             case google:
-                return userAuthService.exchange(googleClientConfig, code, state, redirectUrl);
+                return userAuthService.exchange(application, googleClientConfig, code, state, redirectUrl);
             case github:
-                return userAuthService.exchange(githubClientConfig, code, state, redirectUrl);
+                return userAuthService.exchange(application, githubClientConfig, code, state, redirectUrl);
         }
         return null;
     }
 
     @GetMapping("auth/one-time-password")
     public OneTimePasswordDto requestOneTimePassword(@RequestParam String email) throws CastleException {
-        return otpService.requestOneTimePassword("email#" + email);
+        return otpService.requestOneTimePassword(email);
     }
 
     @PostMapping("auth/one-time-password")
     public UserWithToken verifyOneTimePassword(@RequestBody VerifyOneTimeRequest request) throws CastleException {
-        return otpService.verifyOneTimePassword("email#" + request.getEmail(), request.getOneTimePassword());
+        return otpService.verifyOneTimePassword(application, request.getEmail(), request.getOneTimePassword());
     }
 }

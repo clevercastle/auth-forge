@@ -7,6 +7,8 @@ import org.clevercastle.authforge.core.repository.RefreshTokenRepository;
 import org.clevercastle.authforge.core.repository.UserHmacSecretRepository;
 import org.clevercastle.authforge.core.repository.UserLoginItemRepository;
 import org.clevercastle.authforge.core.repository.UserRepository;
+import org.clevercastle.authforge.core.repository.VerificationCodeRepository;
+import org.clevercastle.authforge.impl.postgres.repository.InMemoryVerificationCodeRepository;
 import org.clevercastle.authforge.impl.postgres.repository.PostgresChallengeSessionRepository;
 import org.clevercastle.authforge.impl.postgres.repository.PostgresLoginItemRepository;
 import org.clevercastle.authforge.impl.postgres.repository.PostgresOneTimePasswordRepository;
@@ -54,5 +56,10 @@ public class RepositoryBeans {
     public ChallengeSessionRepository challengeSessionRepository(EntityManager entityManager) {
         JpaRepositoryFactory jpaRepositoryFactory = new JpaRepositoryFactory(entityManager);
         return new PostgresChallengeSessionRepository(jpaRepositoryFactory);
+    }
+
+    @Bean
+    public VerificationCodeRepository verificationCodeRepository(EntityManager entityManager) {
+        return new InMemoryVerificationCodeRepository();
     }
 }

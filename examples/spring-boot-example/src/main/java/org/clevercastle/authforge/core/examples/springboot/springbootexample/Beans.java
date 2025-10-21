@@ -1,38 +1,31 @@
 package org.clevercastle.authforge.core.examples.springboot.springbootexample;
 
-import com.auth0.jwt.algorithms.Algorithm;
-import org.clevercastle.authforge.core.CacheService;
 import org.clevercastle.authforge.core.Config;
 import org.clevercastle.authforge.core.DummyCacheServiceImpl;
-import org.clevercastle.authforge.core.code.CodeSender;
-import org.clevercastle.authforge.core.code.DummyCodeSender;
+import org.clevercastle.authforge.core.codesender.CodeSender;
+import org.clevercastle.authforge.core.codesender.DummyCodeSender;
 import org.clevercastle.authforge.core.repository.OneTimePasswordRepository;
 import org.clevercastle.authforge.core.repository.RefreshTokenRepository;
 import org.clevercastle.authforge.core.repository.UserLoginItemRepository;
 import org.clevercastle.authforge.core.repository.UserRepository;
+import org.clevercastle.authforge.core.repository.VerificationCodeRepository;
+import org.clevercastle.authforge.core.service.CacheService;
 import org.clevercastle.authforge.core.service.OtpService;
 import org.clevercastle.authforge.core.service.TokenManager;
 import org.clevercastle.authforge.core.service.UserAuthService;
+import org.clevercastle.authforge.core.service.VerificationCodeService;
 import org.clevercastle.authforge.core.service.impl.OtpServiceImpl;
 import org.clevercastle.authforge.core.service.impl.TokenManagerImpl;
 import org.clevercastle.authforge.core.service.impl.UserAuthServiceImpl;
-import org.clevercastle.authforge.core.token.TokenGenerator;
-import org.clevercastle.authforge.core.token.jwt.SelfHostTokenGenerator;
+import org.clevercastle.authforge.core.service.impl.VerificationCodeServiceImpl;
+import org.clevercastle.authforge.core.token.SignatureProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.interfaces.ECPrivateKey;
-import java.security.interfaces.ECPublicKey;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
-import java.util.Base64;
+import java.util.List;
 
 @Configuration
 public class Beans {
@@ -40,22 +33,47 @@ public class Beans {
     // PostgreSQL repository implementations are auto-detected by Spring Boot via @Repository annotations
     // No need to manually create beans - Spring will auto-wire them
 
+//    @Bean
+//    public TokenGenerator tokenService() throws NoSuchAlgorithmException, InvalidKeySpecException {
+//        String privateKeyBase64 = "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQg9dIFmLwqXyr9fLX8XYOL5tiS63YJP0NGo9+7wqm3gdahRANCAATcI/NjILO7b1x7CQwHkB2+CGsrIKqI94fh8aEtaWTIzGYn1vct9u2/AvORtn6qBpi4/rJH4XxFekFigifbXors";
+//        byte[] publicKeyBytes = Base64.getDecoder().decode("MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE3CPzYyCzu29cewkMB5AdvghrKyCqiPeH4fGhLWlkyMxmJ9b3LfbtvwLzkbZ+qgaYuP6yR+F8RXpBYoIn216K7A==");
+//        KeyFactory keyFactory = KeyFactory.getInstance("EC");
+//
+//        byte[] privateKeyBytes = Base64.getDecoder().decode(privateKeyBase64);
+//
+//        PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
+//        PrivateKey privateKey = keyFactory.generatePrivate(privateKeySpec);
+//        X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
+//        PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
+//
+//        // Validate the key type and curve
+//        var algorithm = Algorithm.ECDSA256((ECPublicKey) publicKey, (ECPrivateKey) privateKey);
+//        return new TokenGenerator(Config.builder().build(), "client-01", "kid", algorithm);
+//    }
+
     @Bean
-    public TokenGenerator tokenService() throws NoSuchAlgorithmException, InvalidKeySpecException {
-        String privateKeyBase64 = "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQg9dIFmLwqXyr9fLX8XYOL5tiS63YJP0NGo9+7wqm3gdahRANCAATcI/NjILO7b1x7CQwHkB2+CGsrIKqI94fh8aEtaWTIzGYn1vct9u2/AvORtn6qBpi4/rJH4XxFekFigifbXors";
-        byte[] publicKeyBytes = Base64.getDecoder().decode("MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE3CPzYyCzu29cewkMB5AdvghrKyCqiPeH4fGhLWlkyMxmJ9b3LfbtvwLzkbZ+qgaYuP6yR+F8RXpBYoIn216K7A==");
-        KeyFactory keyFactory = KeyFactory.getInstance("EC");
+    public SignatureProvider signatureProvider() {
+        return new SignatureProvider() {
+            @Override
+            public byte[] sign(byte[] data) {
+                return new byte[0];
+            }
 
-        byte[] privateKeyBytes = Base64.getDecoder().decode(privateKeyBase64);
+            @Override
+            public boolean verify(byte[] data, byte[] signature) {
+                return false;
+            }
 
-        PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
-        PrivateKey privateKey = keyFactory.generatePrivate(privateKeySpec);
-        X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publicKeyBytes);
-        PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
+            @Override
+            public String keyId() {
+                return "";
+            }
 
-        // Validate the key type and curve
-        var algorithm = Algorithm.ECDSA256((ECPublicKey) publicKey, (ECPrivateKey) privateKey);
-        return new TokenGenerator(Config.builder().build(), "client-01", "kid", algorithm);
+            @Override
+            public String alg() {
+                return "";
+            }
+        };
     }
 
     @Bean
@@ -73,33 +91,43 @@ public class Beans {
         return new DummyCacheServiceImpl();
     }
 
+    @Lazy
+    @Bean
+    public VerificationCodeService verificationCodeService(@Lazy UserAuthService userAuthService,
+                                                           VerificationCodeRepository verificationCodeRepository) {
+        return new VerificationCodeServiceImpl(userAuthService, verificationCodeRepository);
+    }
+
+    @Lazy
     @Bean
     public UserAuthService userAuthService(Config config,
                                            UserRepository userModelRepository,
                                            UserLoginItemRepository loginItemRepository,
                                            RefreshTokenRepository refreshTokenRepository,
-                                           TokenGenerator tokenService,
+                                           TokenManager tokenManager,
+                                           VerificationCodeService verificationCodeService,
                                            CodeSender codeSender,
                                            CacheService cacheService) {
         return new UserAuthServiceImpl(config, userModelRepository, loginItemRepository,
-                refreshTokenRepository, tokenService, codeSender, cacheService);
+                refreshTokenRepository, tokenManager, codeSender, verificationCodeService, cacheService);
     }
 
     @Bean
     public OtpService otpService(Config config,
                                  OneTimePasswordRepository oneTimePasswordRepository,
-                                 TokenGenerator tokenService,
+                                 TokenManager tokenManager,
                                  CodeSender codeSender,
                                  RefreshTokenRepository refreshTokenRepository,
                                  UserAuthService userAuthService) {
-        return new OtpServiceImpl(config, oneTimePasswordRepository, tokenService,
+        return new OtpServiceImpl(config, oneTimePasswordRepository, tokenManager,
                 codeSender, refreshTokenRepository, userAuthService);
     }
 
     @Bean
-    public TokenManager tokenSessionService(RefreshTokenRepository refreshTokenRepository,
-                                            TokenGenerator tokenService) {
-        return new TokenManagerImpl(refreshTokenRepository, tokenService);
+    public TokenManager tokenSessionService(Config config,
+                                            SignatureProvider signatureProvider,
+                                            RefreshTokenRepository refreshTokenRepository) {
+        return new TokenManagerImpl(config, List.of(signatureProvider), refreshTokenRepository);
     }
 
     @Bean

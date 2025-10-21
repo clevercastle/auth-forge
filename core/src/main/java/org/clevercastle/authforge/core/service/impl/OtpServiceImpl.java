@@ -3,7 +3,7 @@ package org.clevercastle.authforge.core.service.impl;
 import org.apache.commons.lang3.tuple.Pair;
 import org.clevercastle.authforge.core.Application;
 import org.clevercastle.authforge.core.Config;
-import org.clevercastle.authforge.core.code.CodeSender;
+import org.clevercastle.authforge.core.codesender.CodeSender;
 import org.clevercastle.authforge.core.exception.CastleException;
 import org.clevercastle.authforge.core.exception.UserNotFoundException;
 import org.clevercastle.authforge.core.otp.OneTimePassword;
@@ -60,7 +60,8 @@ public class OtpServiceImpl implements OtpService {
         oneTimePassword.setExpiredAt(TimeUtils.now().plusSeconds(config.getOneTimePasswordExpireTime()));
         oneTimePassword.setCreatedAt(TimeUtils.now());
         oneTimePasswordRepository.saveOneTimePassword(oneTimePassword);
-        this.codeSender.sendOneTimePassword(loginIdentifier, oneTimePassword.getOneTimePassword());
+        this.codeSender.sendOneTimePassword(loginIdentifier, pair.getRight().getLoginIdentifierType(),
+                oneTimePassword.getOneTimePassword());
         OneTimePasswordDto oneTimePasswordDto = new OneTimePasswordDto();
         oneTimePasswordDto.setLoginIdentifier(loginIdentifier);
         oneTimePasswordDto.setExpiredAt(oneTimePassword.getExpiredAt());

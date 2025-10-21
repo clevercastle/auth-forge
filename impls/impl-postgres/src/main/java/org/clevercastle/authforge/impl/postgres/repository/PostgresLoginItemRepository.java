@@ -20,14 +20,15 @@ public class PostgresLoginItemRepository implements UserLoginItemRepository {
     }
 
     @Override
-    public void confirmLoginItem(String userSub) throws CastleException {
+    public UserLoginItem updateState(String userSub, UserLoginItem.State userState) throws CastleException {
         try {
-            int updated = userLoginItemJpaRepository.confirmLoginItem(userSub);
-            if (updated == 0) {
-                throw new CastleException("No login item found with the userSub: " + userSub);
+            int updated = userLoginItemJpaRepository.updateState(userSub, userState);
+            if (updated > 0) {
+                Optional<UserLoginItemEntity> entity = userLoginItemJpaRepository.findByUserSub(userSub);
+                return entity.map(UserLoginItemMapper.INSTANCE::toModel).orElse(null);
+            } else {
+                return null;
             }
-        } catch (CastleException e) {
-            throw e;
         } catch (Exception e) {
             throw new CastleException("Failed to confirm login item: " + e.getMessage(), e);
         }
@@ -57,7 +58,8 @@ public class PostgresLoginItemRepository implements UserLoginItemRepository {
 
     @Override
     public List<UserLoginItem> listByLoginIdentifier(String loginIdentifier) throws CastleException {
-        return List.of();
+        List<UserLoginItemEntity> list = userLoginItemJpaRepository.findByLoginIdentifier(loginIdentifier);
+        return list.stream().map(UserLoginItemMapper.INSTANCE::toModel).toList();
     }
 
     @Override

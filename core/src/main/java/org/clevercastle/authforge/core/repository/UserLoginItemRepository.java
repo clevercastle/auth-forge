@@ -7,7 +7,7 @@ import java.util.List;
 
 /** Repository for UserLoginItem (login identifiers). */
 public interface UserLoginItemRepository {
-    void confirmLoginItem(String userSub) throws CastleException;
+    UserLoginItem updateState(String userSub, UserLoginItem.State userState) throws CastleException;
 
     UserLoginItem save(UserLoginItem item) throws CastleException;
 

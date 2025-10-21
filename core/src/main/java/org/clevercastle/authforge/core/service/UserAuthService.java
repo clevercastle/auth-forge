@@ -12,7 +12,6 @@ import org.clevercastle.authforge.core.user.UserWithToken;
 public interface UserAuthService {
     User register(UserRegisterRequest request) throws CastleException;
 
-
     void verify(String loginIdentifier, String verificationCode) throws CastleException;
 
     UserWithToken login(Application application, String loginIdentifier, String password) throws CastleException;

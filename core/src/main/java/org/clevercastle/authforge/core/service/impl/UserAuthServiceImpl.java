@@ -2,23 +2,24 @@ package org.clevercastle.authforge.core.service.impl;
 
 import jakarta.annotation.Nonnull;
 import jakarta.transaction.Transactional;
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.clevercastle.authforge.core.Application;
 import org.clevercastle.authforge.core.Config;
-import org.clevercastle.authforge.core.code.CodeSender;
+import org.clevercastle.authforge.core.codesender.CodeSender;
 import org.clevercastle.authforge.core.exception.CastleException;
 import org.clevercastle.authforge.core.exception.UserExistException;
 import org.clevercastle.authforge.core.exception.UserNotFoundException;
 import org.clevercastle.authforge.core.oauth2.Oauth2ClientConfig;
 import org.clevercastle.authforge.core.oauth2.Oauth2User;
+import org.clevercastle.authforge.core.repository.PatchUserRequest;
 import org.clevercastle.authforge.core.repository.RefreshTokenRepository;
 import org.clevercastle.authforge.core.repository.UserLoginItemRepository;
 import org.clevercastle.authforge.core.repository.UserRepository;
 import org.clevercastle.authforge.core.service.CacheService;
 import org.clevercastle.authforge.core.service.TokenManager;
 import org.clevercastle.authforge.core.service.UserAuthService;
+import org.clevercastle.authforge.core.service.VerificationCodeService;
 import org.clevercastle.authforge.core.user.User;
 import org.clevercastle.authforge.core.user.UserLoginItem;
 import org.clevercastle.authforge.core.user.UserRegisterRequest;
@@ -27,6 +28,7 @@ import org.clevercastle.authforge.core.user.UserWithToken;
 import org.clevercastle.authforge.core.util.HashUtil;
 import org.clevercastle.authforge.core.util.IdUtil;
 import org.clevercastle.authforge.core.util.TimeUtils;
+import org.clevercastle.authforge.core.verificationcode.VerificationCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +46,7 @@ public class UserAuthServiceImpl implements UserAuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final TokenManager tokenManager;
     private final CodeSender codeSender;
+    private final VerificationCodeService verificationCodeService;
     private final CacheService cacheService;
 
     public UserAuthServiceImpl(Config config,
@@ -52,6 +55,7 @@ public class UserAuthServiceImpl implements UserAuthService {
                                RefreshTokenRepository refreshTokenRepository,
                                TokenManager tokenManager,
                                CodeSender codeSender,
+                               VerificationCodeService verificationCodeService,
                                CacheService cacheService) {
         this.config = config;
         this.userModelRepository = userModelRepository;
@@ -59,6 +63,7 @@ public class UserAuthServiceImpl implements UserAuthService {
         this.refreshTokenRepository = refreshTokenRepository;
         this.tokenManager = tokenManager;
         this.codeSender = codeSender;
+        this.verificationCodeService = verificationCodeService;
         this.cacheService = cacheService;
     }
 
@@ -92,10 +97,18 @@ public class UserAuthServiceImpl implements UserAuthService {
         userLoginItem.setUpdatedAt(now);
         userModelRepository.save(user);
         loginItemRepository.save(userLoginItem);
-        // todo send the verification code
+        VerificationCode verificationCode = verificationCodeService.createVerificationCode(VerificationCode.Type.confirmLoginIdentifier, userLoginItem.getLoginIdentifier(), config.getVerificationCodeExpireTime());
+        codeSender.sendVerificationCode(userLoginItem.getLoginIdentifier(), userLoginItem.getLoginIdentifierType(), verificationCode.getCode());
         return user;
     }
 
+    /**
+     * @param loginIdentifier
+     * @param verificationCode
+     * @throws CastleException
+     *         InvalidCodeException
+     *         InvalidLoginIdentifierException
+     */
     @Override
     @javax.transaction.Transactional
     @Transactional
@@ -109,9 +122,16 @@ public class UserAuthServiceImpl implements UserAuthService {
         if (UserLoginItem.State.active == userLoginItem.getState()) {
             throw new CastleException();
         }
-        // todo check code
-        throw new NotImplementedException();
-
+        boolean verificationCodeResult = verificationCodeService.verifyCode(VerificationCode.Type.confirmLoginIdentifier, loginIdentifier, verificationCode);
+        if (verificationCodeResult) {
+            loginItemRepository.updateState(userLoginItem.getUserSub(), UserLoginItem.State.active);
+            // todo update user state if needed, need to expect the old state is inactive
+            userModelRepository.patch(userLoginItem.getUserId(), PatchUserRequest.builder()
+                    .state(UserState.active.name())
+                    .build());
+        } else {
+            throw new CastleException("Invalid verification code");
+        }
     }
 
     @Override

@@ -59,7 +59,6 @@ class UserLoginItemJpaRepositoryTest {
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "none");
-        registry.add("spring.jpa.entityManagerFactoryInterface", () -> "jakarta.persistence.EntityManagerFactory");
     }
 
     @Autowired

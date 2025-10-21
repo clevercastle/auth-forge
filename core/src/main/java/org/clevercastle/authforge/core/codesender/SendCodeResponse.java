@@ -1,4 +1,4 @@
-package org.clevercastle.authforge.core.code;
+package org.clevercastle.authforge.core.codesender;
 
 public class SendCodeResponse {
     public enum Type {
