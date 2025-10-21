@@ -104,7 +104,7 @@ public class UserAuthServiceImpl implements UserAuthService {
 
     /**
      * @param loginIdentifier
-     * @param verificationCode
+     * @param confirmCode
      * @throws CastleException
      *         InvalidCodeException
      *         InvalidLoginIdentifierException
@@ -112,7 +112,7 @@ public class UserAuthServiceImpl implements UserAuthService {
     @Override
     @javax.transaction.Transactional
     @Transactional
-    public void verify(String loginIdentifier, String verificationCode) throws CastleException {
+    public void confirm(String loginIdentifier, String confirmCode) throws CastleException {
         Pair<User, UserLoginItem> pair = this.getRawLoginItemByLoginIdentifier(loginIdentifier);
         // if not found, return
         if (pair.getLeft() == null || pair.getRight() == null) {
@@ -122,7 +122,7 @@ public class UserAuthServiceImpl implements UserAuthService {
         if (UserLoginItem.State.active == userLoginItem.getState()) {
             throw new CastleException();
         }
-        boolean verificationCodeResult = verificationCodeService.verifyCode(VerificationCode.Type.confirmLoginIdentifier, loginIdentifier, verificationCode);
+        boolean verificationCodeResult = verificationCodeService.verifyCode(VerificationCode.Type.confirmLoginIdentifier, loginIdentifier, confirmCode);
         if (verificationCodeResult) {
             loginItemRepository.updateState(userLoginItem.getUserSub(), UserLoginItem.State.active);
             // todo update user state if needed, need to expect the old state is inactive
@@ -133,6 +133,27 @@ public class UserAuthServiceImpl implements UserAuthService {
             throw new CastleException("Invalid verification code");
         }
     }
+
+    @Override
+    @javax.transaction.Transactional
+    @Transactional
+    public void resendConfirmCode(String loginIdentifier) throws CastleException {
+        Pair<User, UserLoginItem> pair = this.getRawLoginItemByLoginIdentifier(loginIdentifier);
+        // if not found, return
+        if (pair.getLeft() == null || pair.getRight() == null) {
+            throw new UserNotFoundException();
+        }
+        var userLoginItem = pair.getRight();
+        if (UserLoginItem.State.active == userLoginItem.getState()) {
+            throw new CastleException();
+        }
+        verificationCodeService.invalidateCodes(VerificationCode.Type.confirmLoginIdentifier, loginIdentifier);
+        VerificationCode verificationCode = verificationCodeService
+                .createVerificationCode(VerificationCode.Type.confirmLoginIdentifier, userLoginItem.getLoginIdentifier(),
+                        config.getVerificationCodeExpireTime());
+        codeSender.sendVerificationCode(userLoginItem.getLoginIdentifier(), userLoginItem.getLoginIdentifierType(), verificationCode.getCode());
+    }
+
 
     @Override
     @Transactional

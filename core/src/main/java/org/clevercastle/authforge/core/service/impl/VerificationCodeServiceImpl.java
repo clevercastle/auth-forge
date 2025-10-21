@@ -41,6 +41,11 @@ public class VerificationCodeServiceImpl implements VerificationCodeService {
     }
 
     @Override
+    public int invalidateCodes(VerificationCode.Type type, String identifiers) throws CastleException {
+        return verificationCodeRepository.removeAll(type, identifiers);
+    }
+
+    @Override
     public boolean verifyCode(VerificationCode.Type type, String identifier, String code) throws CastleException {
         VerificationCode verificationCode = verificationCodeRepository.getByCode(code);
         if (verificationCode == null) {

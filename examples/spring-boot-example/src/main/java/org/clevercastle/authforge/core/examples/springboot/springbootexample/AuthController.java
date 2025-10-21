@@ -99,10 +99,15 @@ public class AuthController {
         return userAuthService.register(userRegisterRequest);
     }
 
+    @GetMapping("auth/confirm")
+    public UserWithToken confirm(@RequestParam String email, @RequestParam String confirmCode) throws CastleException {
+        userAuthService.confirm(email, confirmCode);
+        return null;
+    }
 
-    @GetMapping("auth/verify")
-    public UserWithToken verify(@RequestParam String email, @RequestParam String verificationCode) throws CastleException {
-        userAuthService.verify(email, verificationCode);
+    @GetMapping("auth/confirm/resend")
+    public UserWithToken resend(@RequestParam String email) throws CastleException {
+        userAuthService.resendConfirmCode(email);
         return null;
     }
 

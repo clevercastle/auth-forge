@@ -8,13 +8,13 @@ import org.clevercastle.authforge.core.repository.UserHmacSecretRepository;
 import org.clevercastle.authforge.core.repository.UserLoginItemRepository;
 import org.clevercastle.authforge.core.repository.UserRepository;
 import org.clevercastle.authforge.core.repository.VerificationCodeRepository;
-import org.clevercastle.authforge.impl.postgres.repository.InMemoryVerificationCodeRepository;
 import org.clevercastle.authforge.impl.postgres.repository.PostgresChallengeSessionRepository;
 import org.clevercastle.authforge.impl.postgres.repository.PostgresLoginItemRepository;
 import org.clevercastle.authforge.impl.postgres.repository.PostgresOneTimePasswordRepository;
 import org.clevercastle.authforge.impl.postgres.repository.PostgresRefreshTokenRepository;
 import org.clevercastle.authforge.impl.postgres.repository.PostgresUserHmacSecretRepository;
 import org.clevercastle.authforge.impl.postgres.repository.PostgresUserModelRepository;
+import org.clevercastle.authforge.impl.postgres.repository.PostgresVerificationCodeRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.support.JpaRepositoryFactory;
@@ -60,6 +60,7 @@ public class RepositoryBeans {
 
     @Bean
     public VerificationCodeRepository verificationCodeRepository(EntityManager entityManager) {
-        return new InMemoryVerificationCodeRepository();
+        JpaRepositoryFactory jpaRepositoryFactory = new JpaRepositoryFactory(entityManager);
+        return new PostgresVerificationCodeRepository(jpaRepositoryFactory);
     }
 }

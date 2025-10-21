@@ -78,7 +78,11 @@ public class Beans {
 
     @Bean
     public Config config() {
-        return Config.builder().build();
+        return Config.builder()
+                .verificationCodeExpireTime(60)
+                .oneTimePasswordExpireTime(60)
+                .tokenExpireTime(3600)
+                .build();
     }
 
     @Bean
