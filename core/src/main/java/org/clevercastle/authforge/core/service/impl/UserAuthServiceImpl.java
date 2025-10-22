@@ -162,6 +162,55 @@ public class UserAuthServiceImpl implements UserAuthService {
     }
 
 
+    @javax.transaction.Transactional
+    @Transactional
+    @Override
+    public void requestResetPassword(String loginIdentifier) throws CastleException {
+        Pair<User, UserLoginItem> pair = this.getRawLoginItemByLoginIdentifier(loginIdentifier);
+        if (pair.getLeft() == null || pair.getRight() == null) {
+            throw new LoginIdentifierNotFoundException();
+        }
+        VerificationCode verificationCode = verificationCodeService
+                .createVerificationCode(VerificationCode.Type.resetPassword, loginIdentifier,
+                        config.getVerificationCodeExpireTime());
+        codeSender.sendVerificationCode(VerificationCode.Type.confirmLoginIdentifier, pair.getRight().getLoginIdentifier(),
+                pair.getRight().getLoginIdentifierType(), verificationCode.getCode());
+    }
+
+    @javax.transaction.Transactional
+    @Transactional
+    @Override
+    public void resetPassword(String loginIdentifier, String code, String newPassword) throws CastleException {
+        Pair<User, UserLoginItem> pair = this.getRawLoginItemByLoginIdentifier(loginIdentifier);
+        if (pair.getLeft() == null || pair.getRight() == null) {
+            throw new LoginIdentifierNotFoundException();
+        }
+        boolean verificationResult = verificationCodeService.verifyCode(VerificationCode.Type.resetPassword, loginIdentifier, code);
+        if (verificationResult) {
+            userModelRepository.patch(pair.getLeft().getUserId(), PatchUserRequest.builder()
+                    .hashedPassword(HashUtil.hashPassword(newPassword))
+                    .build());
+            verificationCodeService.invalidateCodes(VerificationCode.Type.resetPassword, loginIdentifier);
+        } else {
+            throw new InvalidVerificationCodeException();
+        }
+    }
+
+    @Override
+    public void changePassword(String userId, String oldPassword, String newPassword) throws CastleException {
+        User user = userModelRepository.getByUserId(userId);
+        if (user == null) {
+            throw new UserNotFoundException();
+        }
+        boolean verify = HashUtil.verifyPassword(oldPassword, user.getHashedPassword());
+        if (!verify) {
+            throw new InvalidCredentialsException();
+        }
+        userModelRepository.patch(user.getUserId(), PatchUserRequest.builder()
+                .hashedPassword(HashUtil.hashPassword(newPassword))
+                .build());
+    }
+
     @Override
     @Transactional
     public UserWithToken login(Application application, String loginIdentifier, String password) throws CastleException {

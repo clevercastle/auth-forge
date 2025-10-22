@@ -3,11 +3,11 @@
 - [x] resend the confirmation code
 - [x] email+password login
 - [x] login with one time password
-- [ ] anonymous reset password
-- [ ] user change password
+- [x] anonymous reset password
+- [x] user change password
 - [ ] admin reset password
 - [ ] admin change password
-- [ ] castle exceptions
+- [x] castle exceptions
 - [ ] setup mfa (authenticator app)
 - [ ] verify mfa (authenticator app)
 - [ ] challenge session

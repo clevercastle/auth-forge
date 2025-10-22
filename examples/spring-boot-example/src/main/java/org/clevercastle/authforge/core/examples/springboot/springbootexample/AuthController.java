@@ -121,6 +121,17 @@ public class AuthController {
         return userAuthService.login(application, loginIdentifier, password);
     }
 
+
+    @GetMapping("auth/request-reset-password")
+    public void requestResetPassword(@RequestParam String loginIdentifier) throws CastleException {
+        userAuthService.requestResetPassword(loginIdentifier);
+    }
+
+    @PostMapping("auth/reset-password")
+    public void resetPassword(@RequestBody ResetPasswordRequest request) throws CastleException {
+        userAuthService.resetPassword(request.getLoginIdentifier(), request.getCode(), request.getNewPassword());
+    }
+
     @GetMapping("auth/refresh")
     public UserWithToken login(@RequestHeader String authorization, @RequestBody RefreshTokenRequest refreshToken) throws CastleException, ParseException {
         // decode basic authentication

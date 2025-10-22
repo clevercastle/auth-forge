@@ -16,6 +16,12 @@ public interface UserAuthService {
 
     void resendConfirmCode(String loginIdentifier) throws CastleException;
 
+    void requestResetPassword(String loginIdentifier) throws CastleException;
+
+    void resetPassword(String loginIdentifier, String code, String newPassword) throws CastleException;
+
+    void changePassword(String userId, String oldPassword, String newPassword) throws CastleException;
+
     UserWithToken login(Application application, String loginIdentifier, String password) throws CastleException;
 
     Pair<User, UserLoginItem> getByLoginIdentifier(String loginIdentifier, String loginIdentifierType) throws CastleException;
