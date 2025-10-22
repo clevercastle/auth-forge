@@ -59,7 +59,8 @@ public class GithubOauth2ExchangeService extends AbstractOauth2ExchangeService {
                 oauth2User.setName(githubUser.getName());
                 return oauth2User;
             } catch (CastleException e) {
-                throw new CastleException(e);
+                logger.error("Fail to get github user info", e);
+                throw e;
             }
         }
         if (tokenResponse instanceof TokenErrorResponse) {

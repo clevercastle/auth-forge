@@ -8,8 +8,14 @@ import org.clevercastle.authforge.core.Application;
 import org.clevercastle.authforge.core.Config;
 import org.clevercastle.authforge.core.codesender.CodeSender;
 import org.clevercastle.authforge.core.exception.CastleException;
-import org.clevercastle.authforge.core.exception.UserExistException;
-import org.clevercastle.authforge.core.exception.UserNotFoundException;
+import org.clevercastle.authforge.core.exception.InvalidVerificationCodeException;
+import org.clevercastle.authforge.core.exception.auth.InvalidCredentialsException;
+import org.clevercastle.authforge.core.exception.user.LoginIdentifierDuplicateException;
+import org.clevercastle.authforge.core.exception.user.LoginIdentifierNotFoundException;
+import org.clevercastle.authforge.core.exception.user.UserExistException;
+import org.clevercastle.authforge.core.exception.user.UserLoginItemStateException;
+import org.clevercastle.authforge.core.exception.user.UserNotFoundException;
+import org.clevercastle.authforge.core.exception.user.UserStateException;
 import org.clevercastle.authforge.core.oauth2.Oauth2ClientConfig;
 import org.clevercastle.authforge.core.oauth2.Oauth2User;
 import org.clevercastle.authforge.core.repository.PatchUserRequest;
@@ -119,8 +125,8 @@ public class UserAuthServiceImpl implements UserAuthService {
             throw new UserNotFoundException();
         }
         var userLoginItem = pair.getRight();
-        if (UserLoginItem.State.active == userLoginItem.getState()) {
-            throw new CastleException();
+        if (UserLoginItem.State.unconfirmed != userLoginItem.getState()) {
+            throw new UserLoginItemStateException(userLoginItem.getState());
         }
         boolean verificationCodeResult = verificationCodeService.verifyCode(VerificationCode.Type.confirmLoginIdentifier, loginIdentifier, confirmCode);
         if (verificationCodeResult) {
@@ -130,7 +136,7 @@ public class UserAuthServiceImpl implements UserAuthService {
                     .state(UserState.active.name())
                     .build());
         } else {
-            throw new CastleException("Invalid verification code");
+            throw new InvalidVerificationCodeException();
         }
     }
 
@@ -144,8 +150,8 @@ public class UserAuthServiceImpl implements UserAuthService {
             throw new UserNotFoundException();
         }
         var userLoginItem = pair.getRight();
-        if (UserLoginItem.State.active == userLoginItem.getState()) {
-            throw new CastleException();
+        if (UserLoginItem.State.unconfirmed != userLoginItem.getState()) {
+            throw new UserLoginItemStateException(userLoginItem.getState());
         }
         verificationCodeService.invalidateCodes(VerificationCode.Type.confirmLoginIdentifier, loginIdentifier);
         VerificationCode verificationCode = verificationCodeService
@@ -169,11 +175,11 @@ public class UserAuthServiceImpl implements UserAuthService {
             throw new CastleException("Current login is not confirmed");
         }
         if (UserState.active != user.getState()) {
-            throw new CastleException("");
+            throw new UserStateException(user.getState());
         }
         boolean verify = HashUtil.verifyPassword(password, user.getHashedPassword());
         if (!verify) {
-            throw new CastleException("Incorrect password");
+            throw new InvalidCredentialsException();
         }
         UserWithToken userWithToken = tokenManager.generateToken(user, userLoginItem, application);
         refreshTokenRepository.addRefreshToken(user, userWithToken.getTokenHolder().getRefreshToken(),
@@ -203,41 +209,31 @@ public class UserAuthServiceImpl implements UserAuthService {
 
     @Override
     public Pair<User, UserLoginItem> getRawLoginItemByLoginIdentifier(String loginIdentifier) throws CastleException {
-        try {
-            List<UserLoginItem> loginItems = loginItemRepository.listByLoginIdentifier(loginIdentifier);
-            loginItems = loginItems.stream().filter(it -> UserLoginItem.Type.raw.equals(it.getType()))
-                    .collect(Collectors.toList());
-            if (loginItems.isEmpty()) {
-                throw new CastleException();
-            }
-            if (loginItems.size() >= 2) {
-                log.error("Multiple login items found for loginIdentifier: {}", loginIdentifier);
-                throw new CastleException();
-            }
-            UserLoginItem loginItem = loginItems.get(0);
-            User user = userModelRepository.getByUserId(loginItem.getUserId());
-            return Pair.of(user, loginItem);
-        } catch (Exception e) {
-            throw new CastleException();
+        List<UserLoginItem> loginItems = loginItemRepository.listByLoginIdentifier(loginIdentifier);
+        loginItems = loginItems.stream().filter(it -> UserLoginItem.Type.raw.equals(it.getType()))
+                .collect(Collectors.toList());
+        if (loginItems.isEmpty()) {
+            throw new LoginIdentifierNotFoundException();
         }
+        if (loginItems.size() >= 2) {
+            log.error("Multiple login items found for loginIdentifier: {}", loginIdentifier);
+            throw new LoginIdentifierDuplicateException("Multiple login items found for loginIdentifier: " + loginIdentifier);
+        }
+        UserLoginItem loginItem = loginItems.get(0);
+        User user = userModelRepository.getByUserId(loginItem.getUserId());
+        return Pair.of(user, loginItem);
     }
 
     @Override
     public Pair<User, UserLoginItem> getByUserSub(String userSub) throws CastleException {
-        try {
-            // Get login item first
-            UserLoginItem loginItem = loginItemRepository.getByUserSub(userSub);
-            if (loginItem == null) {
-                return Pair.of(null, null);
-            }
-            // Get user by userId from login item
-            User user = userModelRepository.getByUserId(loginItem.getUserId());
-            return Pair.of(user, loginItem);
-        } catch (CastleException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new CastleException("Failed to get user identity by userSub: " + e.getMessage(), e);
+        // Get login item first
+        UserLoginItem loginItem = loginItemRepository.getByUserSub(userSub);
+        if (loginItem == null) {
+            return Pair.of(null, null);
         }
+        // Get user by userId from login item
+        User user = userModelRepository.getByUserId(loginItem.getUserId());
+        return Pair.of(user, loginItem);
     }
 
     @Override

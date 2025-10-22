@@ -13,6 +13,7 @@ import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import org.apache.commons.lang3.StringUtils;
 import org.clevercastle.authforge.core.exception.CastleException;
+import org.clevercastle.authforge.core.exception.OAuth2ExchangeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +58,7 @@ public abstract class AbstractOauth2ExchangeService implements Oauth2ExchangeSer
             TokenRequest request = new TokenRequest(tokenEndpoint, clientAuth, codeGrant, null);
             return request.toHTTPRequest();
         } catch (URISyntaxException e) {
-            throw new CastleException(e);
+            throw new OAuth2ExchangeException("URI syntax error", e);
         }
     }
 
@@ -67,7 +68,7 @@ public abstract class AbstractOauth2ExchangeService implements Oauth2ExchangeSer
         try {
             return httpRequest.send();
         } catch (IOException e) {
-            throw new CastleException(e);
+            throw new OAuth2ExchangeException("HTTP request error", e);
         }
     }
 }

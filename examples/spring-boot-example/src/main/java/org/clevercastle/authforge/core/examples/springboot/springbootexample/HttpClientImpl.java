@@ -8,6 +8,7 @@ import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.util.Timeout;
 import org.clevercastle.authforge.core.exception.CastleException;
+import org.clevercastle.authforge.core.exception.HttpException;
 import org.clevercastle.authforge.core.http.HttpRequest;
 import org.clevercastle.authforge.core.http.HttpResponse;
 import org.clevercastle.authforge.core.http.IHttpClient;
@@ -43,7 +44,7 @@ public class HttpClientImpl implements IHttpClient {
                     new String(response.getEntity().getContent().readAllBytes(), Charset.defaultCharset()),
                     headers);
         } catch (IOException e) {
-            throw new CastleException(e);
+            throw new HttpException(e);
         }
     }
 }

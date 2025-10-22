@@ -4,7 +4,7 @@ import jakarta.transaction.Transactional;
 import org.clevercastle.authforge.core.Config;
 import org.clevercastle.authforge.core.codesender.CodeSender;
 import org.clevercastle.authforge.core.exception.CastleException;
-import org.clevercastle.authforge.core.exception.UserNotFoundException;
+import org.clevercastle.authforge.core.exception.user.UserNotFoundException;
 import org.clevercastle.authforge.core.repository.PatchUserRequest;
 import org.clevercastle.authforge.core.repository.UserLoginItemRepository;
 import org.clevercastle.authforge.core.repository.UserRepository;

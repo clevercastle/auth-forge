@@ -6,7 +6,7 @@ import org.clevercastle.authforge.core.Application;
 import org.clevercastle.authforge.core.Config;
 import org.clevercastle.authforge.core.codesender.CodeSender;
 import org.clevercastle.authforge.core.exception.CastleException;
-import org.clevercastle.authforge.core.exception.UserNotFoundException;
+import org.clevercastle.authforge.core.exception.user.UserNotFoundException;
 import org.clevercastle.authforge.core.repository.RefreshTokenRepository;
 import org.clevercastle.authforge.core.service.OtpService;
 import org.clevercastle.authforge.core.service.TokenManager;
